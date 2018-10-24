@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements LifecycleOwner {
         viewVM.setCurrentUser(user);
     }
 
-    @ObserveData( liveData = "statusTask")
+    @ObserveData(liveData = "statusTask")
     void onStatusTaskChanged(TaskStatus status) {
         if (status != null) {
             String text = MessageFormat.format("{0} {1} {2}", status.getTaskName(), status.getState().name(), status.hashCode());

@@ -107,28 +107,26 @@ public class ArcViewGenerator {
 //            clazz.getSimpleName();
 
             if (viewModelName.isEmpty()) {
-                ArrayList<ClassName> classVMNamesProj = liveDataClass.get(liveDataName);
-                System.out.printf(MessageFormat.format("\n\n VMSFROMVIEW {0}", vmsFromView.toString()));
-                System.out.printf(MessageFormat.format("\n VMSFROMPROJ for {0} {1}", liveDataName, classVMNamesProj.toString()));
-
                 ArrayList<String> liveDataFromViewForLiveDataName = new ArrayList<>();
-                for (ClassName projClassName : classVMNamesProj) {
-                    List<String> sujVM = vmsFromView.get(projClassName.simpleName());
-                    if (sujVM != null) {
-                        liveDataFromViewForLiveDataName.addAll(sujVM);
+                ArrayList<ClassName> classVMNamesProj = liveDataClass.get(liveDataName);
+                if (classVMNamesProj != null) {
+                    for (ClassName projClassName : classVMNamesProj) {
+                        List<String> sujVM = vmsFromView.get(projClassName.simpleName());
+                        if (sujVM != null) {
+                            liveDataFromViewForLiveDataName.addAll(sujVM);
+                        }
                     }
                 }
-                System.out.printf(MessageFormat.format("\n LIVEDATAFROMVIEW {0}", liveDataFromViewForLiveDataName.toString()));
                 if (liveDataFromViewForLiveDataName.size() > 0) {
                     viewModelName = liveDataFromViewForLiveDataName.get(0);
-                    if (liveDataFromViewForLiveDataName.size() != 1) {
+                    if (viewModelName != null && liveDataFromViewForLiveDataName.size() != 1) {
                         messager.printMessage(Diagnostic.Kind.WARNING, "Found more than one LiveData for "
                                 + liveDataName + ": " + liveDataFromViewForLiveDataName.toString() + " use \"viewModel\" to specify which ViewModel should be used: " +
                                 "@ObserveData(viewModel = \"XXX\", liveData = \"" + liveDataName + "\") replace XXX with one of " + liveDataFromViewForLiveDataName.toString()
                         );
                     }
                 } else {
-                    messager.printMessage(Diagnostic.Kind.ERROR, "Did not found LiveData of " + liveDataName + " on any ViewModels of " + pack + "." + name);
+                    messager.printMessage(Diagnostic.Kind.ERROR, "Did not found LiveData named " + liveDataName + " on any ViewModels of " + pack + "." + name);
                 }
             }
 
@@ -139,15 +137,17 @@ public class ArcViewGenerator {
 
             System.out.printf(MessageFormat.format("\n    Observing: {0}.{1}", viewModelName, liveDataName));
 
-            init.addStatement("view.$N.$N.observe(view, $N)", viewModelName, liveDataName, TypeSpec.anonymousClassBuilder("")
-                    .addSuperinterface(observer)
-                    .addMethod(MethodSpec.methodBuilder("onChanged")
-                            .addAnnotation(Override.class)
-                            .addModifiers(Modifier.PUBLIC)
-                            .addParameter(ClassName.get(parameter.asType()), "item")
-                            .addStatement("view.$N(item)", methodName)
-                            .build())
-                    .build().toString());
+            if (viewModelName != null && !viewModelName.isEmpty() && !liveDataName.isEmpty()) {
+                init.addStatement("view.$N.$N.observe(view, $N)", viewModelName, liveDataName, TypeSpec.anonymousClassBuilder("")
+                        .addSuperinterface(observer)
+                        .addMethod(MethodSpec.methodBuilder("onChanged")
+                                .addAnnotation(Override.class)
+                                .addModifiers(Modifier.PUBLIC)
+                                .addParameter(ClassName.get(parameter.asType()), "item")
+                                .addStatement("view.$N(item)", methodName)
+                                .build())
+                        .build().toString());
+            }
         }
 
 
