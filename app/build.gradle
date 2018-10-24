@@ -1,14 +1,21 @@
 apply plugin: 'com.android.application'
-
 android {
-    compileSdkVersion versions.target_sdk
+    compileSdkVersion build_versions.target_sdk
+    buildToolsVersion build_versions.build_tools
     defaultConfig {
         applicationId "com.vas.androidarchitecture"
-        minSdkVersion versions.min_sdk
-        targetSdkVersion versions.target_sdk
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [
+                        "androidManifestFile": "$projectDir/src/main/AndroidManifest.xml".toString()
+                ]
+            }
+        }
     }
     buildTypes {
         release {
@@ -16,24 +23,59 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+//    dataBinding {
+//        enabled = true
+//    }
+    productFlavors {
+    }
+    lintOptions {
+        abortOnError false
+    }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "com.android.support:appcompat-v7:$versions.support"
-    implementation "com.android.support.constraint:constraint-layout:$versions.constraint_layout"
-    implementation "com.android.support:appcompat-v7:$versions.support"
-    implementation "com.android.support:design:$versions.support"
-
-    // LiveData + ViewModel
-    implementation "android.arch.lifecycle:extensions:$versions.lifecycle"
-
-    // Navigation
-
-    implementation "android.arch.navigation:navigation-fragment:$versions.navigation"
-    implementation "android.arch.navigation:navigation-ui:$versions.navigation"
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    implementation project(':architecture-annotations')
+    annotationProcessor project(':architecture-processor')
+    implementation "org.androidannotations:androidannotations-api:4.4.0"
+    annotationProcessor "org.androidannotations:androidannotations:4.4.0"
+//    annotationProcessor project(':architecture-androidannotations-plugin')
+
+    // Support libraries
+    implementation deps.support.app_compat
+    implementation deps.support.v4
+    implementation deps.support.design
+    implementation deps.support.cardview
+
+    // Architecture components
+    implementation deps.lifecycle.runtime
+    implementation deps.lifecycle.extensions
+    annotationProcessor deps.lifecycle.compiler
+    implementation deps.room.runtime
+    annotationProcessor deps.room.compiler
+
+    // Android Testing Support Library's runner and rules
+    androidTestImplementation deps.atsl.runner
+    androidTestImplementation deps.atsl.rules
+    androidTestImplementation deps.room.testing
+    androidTestImplementation deps.arch_core.testing
+
+    // Espresso UI Testing
+    androidTestImplementation deps.espresso.core
+    androidTestImplementation deps.espresso.contrib
+    androidTestImplementation deps.espresso.intents
+
+    // Resolve conflicts between main and test APK:
+    androidTestImplementation deps.support.annotations
+    androidTestImplementation deps.support.v4
+    androidTestImplementation deps.support.app_compat
+    androidTestImplementation deps.support.design
 }
