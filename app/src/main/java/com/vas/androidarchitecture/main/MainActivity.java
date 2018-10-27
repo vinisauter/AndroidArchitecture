@@ -3,9 +3,10 @@ package com.vas.androidarchitecture.main;
 import android.widget.TextView;
 
 import com.vas.androidarchitecture.R;
-import com.vas.androidarchitecture.generic.ConfigViewModel_;
+import com.vas.androidarchitecture.generic.ConfigViewModelARC;
 import com.vas.androidarchitecture.model.User;
 import com.vas.architectureandroidannotations.ArcView;
+import com.vas.architectureandroidannotations.ToString;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.view.ObserveData;
 import com.vas.architectureandroidannotations.view.ViewModel;
@@ -19,22 +20,20 @@ import java.text.MessageFormat;
 import java.util.Random;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LifecycleOwner;
 
 /**
  * Created by Vinicius Sauter liveData 09/10/2018.
  * .
  */
+@ToString
 @ArcView
 @EActivity(R.layout.activity_main)
-public class MainActivity extends AppCompatActivity implements LifecycleOwner {
+public class MainActivity extends AppCompatActivity {
 
     @ViewModel("1")
-    MainViewModel_ viewVM;
+    MainViewModelARC viewVM;
     @ViewModel("2")
-    ConfigViewModel_ configVM;
-//    @ViewModel("3")
-//    ConfigViewModel _ConfigVM;
+    ConfigViewModelARC configVM;
 
     @ViewById
     TextView tvStatus;

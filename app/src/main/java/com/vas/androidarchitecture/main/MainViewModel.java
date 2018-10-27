@@ -8,6 +8,7 @@ import com.vas.androidarchitecture.model.User;
 import com.vas.architectureandroidannotations.ArcViewModel;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;
+import com.vas.architectureandroidannotations.viewmodel.Repository;
 
 import java.util.HashMap;
 
@@ -21,14 +22,18 @@ import androidx.lifecycle.ViewModel;
 @ArcViewModel
 public class MainViewModel extends ViewModel {
 
-    //TODO: @Repository
-    private UserRepository_ repository = new UserRepository_();
+    @Repository
+    UserRepositoryARC repository;
+    @Repository
+    UserRepositoryARC repository1;
+    @Repository
+    UserRepositoryARC repository2;
 
     public final MutableLiveData<User> currentUser = new MutableLiveData<>();
     public final MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
 
     public void setCurrentUserName(String currentUserName) {
-        UserRepository_.SendUserNameToServerTask task = repository.sendUserNameToServerAsync(currentUserName, new Callback<User>() {
+        UserRepositoryARC.SendUserNameToServerTask task = repository.sendUserNameToServerAsync(currentUserName, new Callback<User>() {
             @Override
             public void onFinished(User user, Throwable error) {
                 if (error == null)

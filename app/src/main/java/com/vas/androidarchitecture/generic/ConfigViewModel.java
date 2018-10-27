@@ -3,6 +3,7 @@ package com.vas.androidarchitecture.generic;
 import com.vas.architectureandroidannotations.ArcViewModel;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;
+import com.vas.architectureandroidannotations.viewmodel.Repository;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -14,8 +15,8 @@ import androidx.lifecycle.ViewModel;
 @ArcViewModel
 public class ConfigViewModel extends ViewModel {
 
-    //TODO: @Repository
-    public ConfigRepository_ repository = new ConfigRepository_();
+    @Repository
+    ConfigRepositoryARC repository;
     public final MutableLiveData<TaskStatus> statusTask = new MutableLiveData<>();
 
     public void serialAsync() {

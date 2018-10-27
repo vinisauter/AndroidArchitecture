@@ -21,7 +21,7 @@ import static javax.lang.model.element.Modifier.PRIVATE;
  * Created by user liveData 04/10/2018.
  */
 
-public class ArcViewModelValidator {
+public class ArcValidators {
     public static void validateClass(Element elementBase) throws AnnotationException {
         // get annotation of the specified type if such an annotation is present, else null.
         ArcViewModel annotation = elementBase.getAnnotation(ArcViewModel.class);

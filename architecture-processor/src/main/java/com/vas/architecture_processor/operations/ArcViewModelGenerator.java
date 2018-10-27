@@ -9,6 +9,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.vas.architecture_processor.Utils;
 import com.vas.architecture_processor.exceptions.AnnotationException;
+import com.vas.architectureandroidannotations.viewmodel.Repository;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -23,8 +24,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 
 import static javax.lang.model.element.Modifier.FINAL;
+import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
@@ -42,12 +45,15 @@ public class ArcViewModelGenerator {
     public ClassName generateClass(Messager messager, Filer filer, Element elementBase) throws AnnotationException, IOException {
         String pack = Utils.getPackage(elementBase).toString();
         String name = elementBase.getSimpleName().toString();
-        String generatedClassName = name + "_";
+        String generatedClassName = name + "ARC";
         ClassName className = ClassName.get(pack, generatedClassName);
         TypeMirror type = elementBase.asType();
         TypeSpec.Builder navigatorClass = TypeSpec.classBuilder(className)
                 .addModifiers(PUBLIC)
                 .superclass(TypeName.get(type));
+        MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
+                .addModifiers(PUBLIC);
+
         for (Element elementEnclosed : elementBase.getEnclosedElements()) {
             ElementKind fieldKind = elementEnclosed.getKind();
             Set<Modifier> fieldModifiers = elementEnclosed.getModifiers();
@@ -79,11 +85,23 @@ public class ArcViewModelGenerator {
                             .initializer("$S", fieldName)
                             .build();
                     navigatorClass.addField(staticField);
+                } else {
+                    Repository repository = elementEnclosed.getAnnotation(Repository.class);
+                    if (repository != null) {
+                        if (elementEnclosed.getModifiers().contains(PRIVATE)) {
+                            messager.printMessage(Diagnostic.Kind.ERROR, MessageFormat.format("Element {0}.{1} may not be private.", elementEnclosed.getSimpleName(), elementEnclosed.getEnclosingElement().getSimpleName()));
+                        }
+
+                        constructor.addStatement("super.$N = $T.getInstance()", elementEnclosed.getSimpleName(), elementEnclosed.asType());
+
+                    }
                 }
             } else if (elementEnclosed.getKind() == ElementKind.METHOD) {
-                ArcViewModelValidator.validateMethod(elementEnclosed);
+                ArcValidators.validateMethod(elementEnclosed);
             }
         }
+        navigatorClass.addMethod(constructor.build());
+
         navigatorClass.addMethod(MethodSpec.methodBuilder("createInstance")
                 .addModifiers(PUBLIC, STATIC)
                 .addParameter(ClassName.get("androidx.fragment.app", "Fragment"), "fragment")

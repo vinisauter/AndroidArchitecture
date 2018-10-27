@@ -3,6 +3,7 @@ package com.vas.architecture_processor.operations;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
@@ -23,6 +24,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 
 import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
 
 /**
  * Created by user liveData 04/10/2018.
@@ -34,15 +36,28 @@ public class ArcRepositoryGenerator {
     public void generateClass(Messager messager, Filer filer, Element elementBase) throws AnnotationException, IOException {
         String pack = Utils.getPackage(elementBase).toString();
         String name = elementBase.getSimpleName().toString();
-        String generatedClassName = name + "_";
+        String generatedClassName = name + "ARC";
         ClassName className = ClassName.get(pack, generatedClassName);
         classNames.add(className);
-//        ArcRepository annotation = elementBase.getAnnotation(ArcRepository.class);
         TypeMirror type = elementBase.asType();
         TypeSpec.Builder navigatorClass = TypeSpec.classBuilder(className)
                 .addModifiers(PUBLIC)
                 .superclass(TypeName.get(type));
 //        ArcRepositoryValidator.validateClass(elementBase);
+        FieldSpec staticField = FieldSpec.builder(className, "instance_")
+                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .build();
+        navigatorClass.addField(staticField);
+
+        navigatorClass.addMethod(MethodSpec.methodBuilder("getInstance")
+                .addModifiers(PUBLIC, STATIC)
+                .beginControlFlow("if (instance_ == null)")
+                .addStatement("instance_ = new $T()", className)
+                .endControlFlow()
+                .addStatement("return instance_")
+                .returns(className)
+                .build());
+
         ParameterizedTypeName hashMapType = ParameterizedTypeName.get(ClassName.get(HashMap.class),
                 ClassName.get(String.class),
                 ClassName.get("android.os", "AsyncTask"));
