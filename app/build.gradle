@@ -48,8 +48,6 @@ dependencies {
     implementation "org.androidannotations:androidannotations-api:4.5.2"
     annotationProcessor "org.androidannotations:androidannotations:4.5.2"
     annotationProcessor project(':arcandroidannotationsplugin')
-//    annotationProcessor project(':androidannotationsarchitectureplugin')
-//    annotationProcessor project(':architecture-androidannotations-plugin')
 
     // Support libraries
     implementation deps.support.app_compat

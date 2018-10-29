@@ -144,31 +144,3 @@ public class ArcViewModelGenerator {
         }
     }
 }
-
-//    /**
-//     * Creates a {@link ViewModelProvider}, which retains ViewModels while a scope of given
-//     * {@code fragment} is alive. More detailed explanation is in {@link ViewModel}.
-//     * <p>
-//     * It uses the given {@link ViewModelProvider.Factory} to instantiate new ViewModels.
-//     *
-//     * @param fragment a fragment, in whose scope ViewModels should be retained
-//     * @param factory  a {@code Factory} to instantiate new ViewModels
-//     * @return a ViewModelProvider instance
-//     */
-//    public static ConfigViewModel_ createInstance(Fragment fragment, ViewModelProvider.Factory factory) {
-//        return ViewModelProviders.of(fragment, factory).get(ConfigViewModel_.class);
-//    }
-//
-//    /**
-//     * Creates a {@link ViewModelProvider}, which retains ViewModels while a scope of given Activity
-//     * is alive. More detailed explanation is in {@link ViewModel}.
-//     * <p>
-//     * It uses the given {@link ViewModelProvider.Factory} to instantiate new ViewModels.
-//     *
-//     * @param activity an activity, in whose scope ViewModels should be retained
-//     * @param factory  a {@code Factory} to instantiate new ViewModels
-//     * @return a ViewModelProvider instance
-//     */
-//    public static ConfigViewModel_ createInstance(FragmentActivity activity, ViewModelProvider.Factory factory) {
-//        return ViewModelProviders.of(activity, factory).get(ConfigViewModel_.class);
-//    }
