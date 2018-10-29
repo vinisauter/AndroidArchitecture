@@ -3,7 +3,7 @@ package com.vas.androidarchitecture.main;
 import android.os.SystemClock;
 
 import com.vas.androidarchitecture.model.User;
-import com.vas.architectureandroidannotations.ArcRepository;
+import com.vas.architectureandroidannotations.RepositoryARC;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.repository.Async;
 
@@ -11,7 +11,7 @@ import com.vas.architectureandroidannotations.repository.Async;
  * Created by Vinicius Sauter liveData 09/10/2018.
  * .
  */
-@ArcRepository
+@RepositoryARC
 public class UserRepository {
     public void sendUserLastNameToServer(String userLastName, Callback<User> callback) {
         final User user = new User();

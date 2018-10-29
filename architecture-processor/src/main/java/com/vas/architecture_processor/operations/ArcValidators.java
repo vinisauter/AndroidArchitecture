@@ -2,8 +2,8 @@ package com.vas.architecture_processor.operations;
 
 
 import com.vas.architecture_processor.exceptions.AnnotationException;
-import com.vas.architectureandroidannotations.ArcViewModel;
 import com.vas.architectureandroidannotations.Ignore;
+import com.vas.architectureandroidannotations.ViewModelARC;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -24,7 +24,7 @@ import static javax.lang.model.element.Modifier.PRIVATE;
 public class ArcValidators {
     public static void validateClass(Element elementBase) throws AnnotationException {
         // get annotation of the specified type if such an annotation is present, else null.
-        ArcViewModel annotation = elementBase.getAnnotation(ArcViewModel.class);
+        ViewModelARC annotation = elementBase.getAnnotation(ViewModelARC.class);
         String value = annotation.value();
         if (elementBase.getKind() != CLASS) {
             throw new AnnotationException("Can only be applied to class.");
@@ -32,7 +32,7 @@ public class ArcValidators {
         TypeElement typeElement = (TypeElement) elementBase;
 //        boolean isObject = Utils.instanceOf(typeElement, "java.lang.Object");
         if (elementBase.getModifiers().contains(PRIVATE)) {
-            throw new AnnotationException(MessageFormat.format("{0} {1} may not be applied to private classes. ({2})", ArcViewModel.class.getSimpleName(), typeElement.getQualifiedName(), elementBase.getSimpleName()));
+            throw new AnnotationException(MessageFormat.format("{0} {1} may not be applied to private classes. ({2})", ViewModelARC.class.getSimpleName(), typeElement.getQualifiedName(), elementBase.getSimpleName()));
         }
     }
 

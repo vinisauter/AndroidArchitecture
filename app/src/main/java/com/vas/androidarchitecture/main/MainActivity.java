@@ -5,8 +5,7 @@ import android.widget.TextView;
 import com.vas.androidarchitecture.R;
 import com.vas.androidarchitecture.generic.ConfigViewModelARC;
 import com.vas.androidarchitecture.model.User;
-import com.vas.architectureandroidannotations.ArcView;
-import com.vas.architectureandroidannotations.ToString;
+import com.vas.architectureandroidannotations.ViewARC;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.view.ObserveData;
 import com.vas.architectureandroidannotations.view.ViewModel;
@@ -25,8 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
  * Created by Vinicius Sauter liveData 09/10/2018.
  * .
  */
-@ToString
-@ArcView
+@ViewARC
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity {
 
@@ -42,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     @AfterViews
     void afterViews() {
-        MainActivityARC.init(this);
+//        MainActivityARC.init(this);
     }
 
     @ObserveData(liveData = "statusUserTask")

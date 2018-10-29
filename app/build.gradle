@@ -45,8 +45,10 @@ dependencies {
 
     implementation project(':architecture-annotations')
     annotationProcessor project(':architecture-processor')
-    implementation "org.androidannotations:androidannotations-api:4.4.0"
-    annotationProcessor "org.androidannotations:androidannotations:4.4.0"
+    implementation "org.androidannotations:androidannotations-api:4.5.2"
+    annotationProcessor "org.androidannotations:androidannotations:4.5.2"
+    annotationProcessor project(':arcandroidannotationsplugin')
+//    annotationProcessor project(':androidannotationsarchitectureplugin')
 //    annotationProcessor project(':architecture-androidannotations-plugin')
 
     // Support libraries

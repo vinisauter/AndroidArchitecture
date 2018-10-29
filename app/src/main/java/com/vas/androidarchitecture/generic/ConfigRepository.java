@@ -2,14 +2,14 @@ package com.vas.androidarchitecture.generic;
 
 import android.os.SystemClock;
 
-import com.vas.architectureandroidannotations.ArcRepository;
+import com.vas.architectureandroidannotations.RepositoryARC;
 import com.vas.architectureandroidannotations.repository.Async;
 
 /**
  * Created by Vinicius Sauter liveData 09/10/2018.
  * .
  */
-@ArcRepository
+@RepositoryARC
 public class ConfigRepository {
     @Async
     public void serial() throws Throwable {

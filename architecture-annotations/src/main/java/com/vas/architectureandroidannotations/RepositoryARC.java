@@ -20,12 +20,13 @@ import java.lang.annotation.Target;
 //        PACKAGE, //..
 //        TYPE_PARAMETER, //..(java 8)
 //        TYPE_USE; //..(java 8)
-@Retention(RetentionPolicy.CLASS) // required
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
-public @interface ArcView {
-//    Class<? extends androidx.lifecycle.ViewModel> viewModel();
-    Class<?> viewModel() default Void.class;;
+public @interface RepositoryARC {
+    /**
+     * @return The Parse class name associated with the ParseObject subclass.
+     */
+    String value() default "";
 
-//    Class<? extends androidx.lifecycle.ViewModelProvider.Factory> viewModelFactory() default Void.class;
-    Class<?> viewModelFactory() default Void.class;
+    Class<?> dataSource() default Void.class;
 }

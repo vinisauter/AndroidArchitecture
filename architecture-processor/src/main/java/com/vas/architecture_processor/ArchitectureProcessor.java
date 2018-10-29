@@ -6,10 +6,10 @@ import com.vas.architecture_processor.exceptions.AnnotationException;
 import com.vas.architecture_processor.operations.ArcRepositoryGenerator;
 import com.vas.architecture_processor.operations.ArcViewGenerator;
 import com.vas.architecture_processor.operations.ArcViewModelGenerator;
-import com.vas.architectureandroidannotations.ArcRepository;
-import com.vas.architectureandroidannotations.ArcView;
-import com.vas.architectureandroidannotations.ArcViewModel;
 import com.vas.architectureandroidannotations.Ignore;
+import com.vas.architectureandroidannotations.RepositoryARC;
+import com.vas.architectureandroidannotations.ViewARC;
+import com.vas.architectureandroidannotations.ViewModelARC;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -52,8 +52,8 @@ public class ArchitectureProcessor extends AbstractProcessor {
         ArcViewGenerator arcViewGenerator = new ArcViewGenerator();
         ArcViewModelGenerator arcViewModelGenerator = new ArcViewModelGenerator();
         ArcRepositoryGenerator arcRepositoryGenerator = new ArcRepositoryGenerator();
-        for (Element element : roundEnvironment.getElementsAnnotatedWith(ArcRepository.class)) {
-            System.out.printf("\n--Annotation--ArcRepository--" + element);
+        for (Element element : roundEnvironment.getElementsAnnotatedWith(RepositoryARC.class)) {
+            System.out.printf("\n--Annotation--RepositoryARC--" + element);
             try {
                 arcRepositoryGenerator.generateClass(messager, filer, element);
             } catch (AnnotationException ae) {
@@ -61,8 +61,8 @@ public class ArchitectureProcessor extends AbstractProcessor {
             } catch (IOException ignored) {
             }
         }
-        for (Element element : roundEnvironment.getElementsAnnotatedWith(ArcViewModel.class)) {
-            System.out.printf("\n--Annotation--ArcViewModel--" + element);
+        for (Element element : roundEnvironment.getElementsAnnotatedWith(ViewModelARC.class)) {
+            System.out.printf("\n--Annotation--ViewModelARC--" + element);
             try {
                 ClassName viewModelClass = arcViewModelGenerator.generateClass(messager, filer, element);
                 viewModels.put(viewModelClass.simpleName(), viewModelClass);
@@ -75,8 +75,8 @@ public class ArchitectureProcessor extends AbstractProcessor {
             } catch (IOException ignored) {
             }
         }
-        for (Element element : roundEnvironment.getElementsAnnotatedWith(ArcView.class)) {
-            System.out.printf("\n--Annotation--ArcView--" + element);
+        for (Element element : roundEnvironment.getElementsAnnotatedWith(ViewARC.class)) {
+            System.out.printf("\n--Annotation-ArcView--" + element);
             try {
                 arcViewGenerator.generateClass(messager, filer, element, viewModels, arcViewModelGenerator.getLiveDataClass());
             } catch (AnnotationException ae) {
@@ -95,9 +95,9 @@ public class ArchitectureProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> types = new HashSet<>();
         Collections.addAll(types,
-                ArcView.class.getCanonicalName(),
-                ArcViewModel.class.getCanonicalName(),
-                ArcRepository.class.getCanonicalName(),
+//                ViewARC.class.getCanonicalName(),
+                ViewModelARC.class.getCanonicalName(),
+                RepositoryARC.class.getCanonicalName(),
                 Ignore.class.getCanonicalName()
         );
         return types;

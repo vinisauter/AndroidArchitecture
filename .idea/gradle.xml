@@ -9,7 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/architecture-androidannotations-plugin" />
+            <option value="$PROJECT_DIR$/arcandroidannotationsplugin" />
             <option value="$PROJECT_DIR$/architecture-annotations" />
             <option value="$PROJECT_DIR$/architecture-processor" />
           </set>

@@ -1,6 +1,6 @@
 package com.vas.androidarchitecture.generic;
 
-import com.vas.architectureandroidannotations.ArcViewModel;
+import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.viewmodel.Repository;
@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel;
  * Created by Vinicius Sauter liveData 09/10/2018.
  * .
  */
-@ArcViewModel
+@ViewModelARC
 public class ConfigViewModel extends ViewModel {
 
     @Repository

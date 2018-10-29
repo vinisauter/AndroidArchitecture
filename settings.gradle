@@ -1,1 +1,1 @@
-include ':app', ':architecture-annotations', ':architecture-processor', ':architecture-androidannotations-plugin'
+include ':app', ':architecture-annotations', ':architecture-processor', ':arcandroidannotationsplugin'

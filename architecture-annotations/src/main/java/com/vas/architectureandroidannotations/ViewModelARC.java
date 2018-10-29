@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 //        TYPE_USE; //..(java 8)
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
-public @interface ArcRepository {
+public @interface ViewModelARC {
     /**
      * @return The Parse class name associated with the ParseObject subclass.
      */

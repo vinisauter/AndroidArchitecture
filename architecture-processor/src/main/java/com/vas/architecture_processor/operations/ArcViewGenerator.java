@@ -58,7 +58,7 @@ public class ArcViewGenerator {
                 ;
         MethodSpec.Builder init = MethodSpec.methodBuilder("init")
                 .addModifiers(PUBLIC, STATIC)
-                .addParameter(TypeName.get(elementBase.asType()), "view");
+                .addParameter(TypeName.get(elementBase.asType()), "view", FINAL);
 
         ArrayList<ExecutableElement> observeDataMethods = new ArrayList<>();
         HashMap<String, List<String>> vmsFromView = new HashMap<>();

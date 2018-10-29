@@ -1,0 +1,12 @@
+apply plugin: 'java-library'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = 'com.github.vinisauter.ArchitectureAnnotation'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly "org.androidannotations:androidannotations:4.5.2"
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
