@@ -6,10 +6,10 @@ import com.vas.architecture_processor.exceptions.AnnotationException;
 import com.vas.architecture_processor.operations.ArcRepositoryGenerator;
 import com.vas.architecture_processor.operations.ArcViewGenerator;
 import com.vas.architecture_processor.operations.ArcViewModelGenerator;
-import com.vas.architectureandroidannotations.Ignore;
 import com.vas.architectureandroidannotations.RepositoryARC;
-import com.vas.architectureandroidannotations.ViewARC;
 import com.vas.architectureandroidannotations.ViewModelARC;
+import com.vas.architectureandroidannotations.Ignore;
+import com.vas.architectureandroidannotations.ViewARC;
 
 import java.io.IOException;
 import java.util.Collections;
