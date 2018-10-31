@@ -6,10 +6,10 @@ import com.vas.architecture_processor.exceptions.AnnotationException;
 import com.vas.architecture_processor.operations.ArcRepositoryGenerator;
 import com.vas.architecture_processor.operations.ArcViewGenerator;
 import com.vas.architecture_processor.operations.ArcViewModelGenerator;
-import com.vas.architectureandroidannotations.RepositoryARC;
-import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.Ignore;
+import com.vas.architectureandroidannotations.RepositoryARC;
 import com.vas.architectureandroidannotations.ViewARC;
+import com.vas.architectureandroidannotations.ViewModelARC;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -40,7 +40,6 @@ public class ArchitectureProcessor extends AbstractProcessor {
         messager = processingEnvironment.getMessager();
         elements = processingEnvironment.getElementUtils();
         sourceVersion = processingEnvironment.getSourceVersion();
-
 
         System.out.printf("\n-ArchitectureProcessor-" + sourceVersion);
     }
@@ -105,9 +104,7 @@ public class ArchitectureProcessor extends AbstractProcessor {
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
-        SourceVersion sVersion = SourceVersion.latestSupported();
-        System.out.printf("\nSupportedSourceVersion:" + sVersion + " \n");
-        return sVersion;
+        return SourceVersion.latestSupported();
     }
 
 }

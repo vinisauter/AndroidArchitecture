@@ -68,7 +68,7 @@ public class ArcViewGenerator {
                 if (viewModel != null) {
                     String vmClassName = ((DeclaredType) elementEnclosed.asType()).asElement().getSimpleName().toString();
                     ClassName vmTypeName = generatedViewModels.get(vmClassName);
-                    System.out.printf(MessageFormat.format("\n    Instantiated: {0} of {1}", elementEnclosed.getSimpleName().toString(), vmClassName));
+                    messager.printMessage(Diagnostic.Kind.NOTE, MessageFormat.format("{0} Instantiated: {1} = {2}", generatedClassName, elementEnclosed.getSimpleName().toString(), vmClassName));
                     if (vmTypeName == null)
                         throw new AnnotationException("Did not find ViewModel for " + vmClassName + " " + elementEnclosed.getSimpleName().toString());
                     init.addStatement("view.$N = $T.of(view).get($T.class)", elementEnclosed.getSimpleName(), ClassName.get("androidx.lifecycle", "ViewModelProviders"), vmTypeName);
@@ -135,7 +135,7 @@ public class ArcViewGenerator {
                     ClassName.get(parameter.asType())
             );
 
-            System.out.printf(MessageFormat.format("\n    Observing: {0}.{1}", viewModelName, liveDataName));
+            messager.printMessage(Diagnostic.Kind.NOTE, MessageFormat.format("{0} Observing: {1}.{2}", generatedClassName, viewModelName, liveDataName));
 
             if (viewModelName != null && !viewModelName.isEmpty() && !liveDataName.isEmpty()) {
                 init.addStatement("view.$N.$N.observe(view, $N)", viewModelName, liveDataName, TypeSpec.anonymousClassBuilder("")

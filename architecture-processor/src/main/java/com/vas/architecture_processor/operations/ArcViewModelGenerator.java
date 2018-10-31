@@ -15,10 +15,8 @@ import com.vas.architectureandroidannotations.viewmodel.Repository;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -43,7 +41,7 @@ public class ArcViewModelGenerator {
         return liveDataClass;
     }
 
-    HashMap<String, ArrayList<ClassName>> liveDataClass = new HashMap<>();
+    private HashMap<String, ArrayList<ClassName>> liveDataClass = new HashMap<>();
 
     public ClassName generateClass(Messager messager, Filer filer, Element elementBase) throws AnnotationException, IOException {
         String pack = Utils.getPackage(elementBase).toString();
@@ -58,15 +56,6 @@ public class ArcViewModelGenerator {
                 .addModifiers(PRIVATE);
 
         for (Element elementEnclosed : elementBase.getEnclosedElements()) {
-            ElementKind fieldKind = elementEnclosed.getKind();
-            Set<Modifier> fieldModifiers = elementEnclosed.getModifiers();
-            System.out.printf(MessageFormat.format(
-                    "\n    EnclosedElement {0} {1} {2} {3} {4}",
-                    fieldKind,
-                    Arrays.toString(fieldModifiers.toArray()),
-                    elementEnclosed.getSimpleName().toString(),
-                    elementEnclosed.asType(),
-                    elementEnclosed.asType().getKind().isPrimitive() ? "primitive" : ""));
             if (elementEnclosed.getKind() == ElementKind.FIELD) {
                 if (Utils.instanceOf(elementEnclosed, "androidx.lifecycle.LiveData")) {
                     validateFieldLiveData(elementEnclosed);
@@ -81,7 +70,6 @@ public class ArcViewModelGenerator {
                         listData.add(ClassName.get(pack, name));
                         listData.add(className);
                     }
-                    System.out.printf("\nelem: " + elementEnclosed.getSimpleName().toString() + " - " + Arrays.toString(listData.toArray()));
                     String staticFieldName = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, fieldName);
                     FieldSpec staticField = FieldSpec.builder(String.class, staticFieldName)
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
@@ -94,12 +82,9 @@ public class ArcViewModelGenerator {
                         if (elementEnclosed.getModifiers().contains(PRIVATE)) {
                             messager.printMessage(Diagnostic.Kind.ERROR, MessageFormat.format("Element {0}.{1} may not be private.", elementEnclosed.getSimpleName(), elementEnclosed.getEnclosingElement().getSimpleName()));
                         }
-
                         init.addStatement("super.$N = $T.getInstance()", elementEnclosed.getSimpleName(), elementEnclosed.asType());
                     }
                 }
-            } else if (elementEnclosed.getKind() == ElementKind.METHOD) {
-                ArcValidators.validateMethod(elementEnclosed);
             } else if (elementEnclosed.getKind() == ElementKind.CONSTRUCTOR) {
                 if (elementEnclosed.getModifiers().contains(PUBLIC)) {
                     ExecutableElement executableElement = (ExecutableElement) elementEnclosed;
@@ -109,14 +94,12 @@ public class ArcViewModelGenerator {
                     ArrayList<ParameterSpec> parameterSpecs = new ArrayList<>();
                     ArrayList<String> parameterNames = new ArrayList<>();
                     StringBuilder ps = new StringBuilder();
-                    StringBuilder parametersString = new StringBuilder();
                     if (parameterElements.size() > 0) {
                         VariableElement firstParameter = parameterElements.get(0);
                         String fpName = firstParameter.getSimpleName().toString();
                         parameterNames.add(fpName);
                         TypeMirror fpTypeName = firstParameter.asType();
                         parameterSpecs.add(ParameterSpec.builder(TypeName.get(fpTypeName), fpName).build());
-                        parametersString.append("(").append(fpTypeName).append(") objects[").append(0).append("]");
                         ps.append("$N");
                         for (int i = 1; i < parameterElements.size(); i++) {
                             VariableElement variableElement = parameterElements.get(i);
@@ -124,7 +107,6 @@ public class ArcViewModelGenerator {
                             parameterNames.add(fpName);
                             TypeMirror pTypeName = variableElement.asType();
                             parameterSpecs.add(ParameterSpec.builder(TypeName.get(pTypeName), pName).build());
-                            parametersString.append(", (").append(pTypeName).append(") objects[").append(i).append("]");
                             ps.append(", $N");
                         }
                     }
@@ -133,6 +115,8 @@ public class ArcViewModelGenerator {
                     constructor.addStatement("_init()");
                     navigatorClass.addMethod(constructor.build());
                 }
+//            } else if (elementEnclosed.getKind() == ElementKind.METHOD) {
+//                ArcValidators.validateMethod(elementEnclosed);
             }
         }
         navigatorClass.addMethod(init.build());
