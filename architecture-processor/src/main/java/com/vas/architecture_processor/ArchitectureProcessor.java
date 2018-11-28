@@ -27,6 +27,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
+@SuppressWarnings({"FieldCanBeLocal", "unused"})
 public class ArchitectureProcessor extends AbstractProcessor {
     private Filer filer;
     private Messager messager;
@@ -41,29 +42,35 @@ public class ArchitectureProcessor extends AbstractProcessor {
         elements = processingEnvironment.getElementUtils();
         sourceVersion = processingEnvironment.getSourceVersion();
 
-        System.out.printf("\n-ArchitectureProcessor-" + sourceVersion);
+        System.out.println("-ArchitectureProcessor-" + sourceVersion);
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
-        System.out.printf("\n-----------PROCESS_START-----------");
+        System.out.println("\n-----------PROCESS_START-----------");
+        HashMap<String, ClassName> repositories = new HashMap<>();
         HashMap<String, ClassName> viewModels = new HashMap<>();
         ArcViewGenerator arcViewGenerator = new ArcViewGenerator();
         ArcViewModelGenerator arcViewModelGenerator = new ArcViewModelGenerator();
         ArcRepositoryGenerator arcRepositoryGenerator = new ArcRepositoryGenerator();
         for (Element element : roundEnvironment.getElementsAnnotatedWith(RepositoryARC.class)) {
-            System.out.printf("\n--Annotation--RepositoryARC--" + element);
+            System.out.println("--Annotation--RepositoryARC--" + element);
             try {
-                arcRepositoryGenerator.generateClass(messager, filer, element);
+                ClassName repositoryClass = arcRepositoryGenerator.generateClass(messager, filer, element);
+                repositories.put(repositoryClass.simpleName(), repositoryClass);
+                String pack = Utils.getPackage(element).toString();
+                String name = element.getSimpleName().toString();
+                ClassName className = ClassName.get(pack, name);
+                repositories.put(name, className);
             } catch (AnnotationException ae) {
                 ae.printStackTrace();
             } catch (IOException ignored) {
             }
         }
         for (Element element : roundEnvironment.getElementsAnnotatedWith(ViewModelARC.class)) {
-            System.out.printf("\n--Annotation--ViewModelARC--" + element);
+            System.out.println("--Annotation--ViewModelARC--" + element);
             try {
-                ClassName viewModelClass = arcViewModelGenerator.generateClass(messager, filer, element);
+                ClassName viewModelClass = arcViewModelGenerator.generateClass(messager, filer, element, repositories);
                 viewModels.put(viewModelClass.simpleName(), viewModelClass);
                 String pack = Utils.getPackage(element).toString();
                 String name = element.getSimpleName().toString();
@@ -75,7 +82,7 @@ public class ArchitectureProcessor extends AbstractProcessor {
             }
         }
         for (Element element : roundEnvironment.getElementsAnnotatedWith(ViewARC.class)) {
-            System.out.printf("\n--Annotation-ArcView--" + element);
+            System.out.println("--Annotation-ArcView--" + element);
             try {
                 arcViewGenerator.generateClass(messager, filer, element, viewModels, arcViewModelGenerator.getLiveDataClass());
             } catch (AnnotationException ae) {
@@ -83,10 +90,10 @@ public class ArchitectureProcessor extends AbstractProcessor {
             } catch (IOException ignored) {
             }
         }
-        for (Element element : roundEnvironment.getRootElements()) {
-            System.out.printf("\n--ROOT_ELEMENT--" + element);
-        }
-        System.out.printf("\n------------PROCESS_END------------\n");
+//        for (Element element : roundEnvironment.getRootElements()) {
+//            System.out.println("\n--ROOT_ELEMENT--" + element);
+//        }
+        System.out.println("------------PROCESS_END------------\n");
         return true;
     }
 

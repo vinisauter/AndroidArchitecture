@@ -28,7 +28,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
 import static javax.lang.model.element.Modifier.FINAL;
@@ -39,26 +38,49 @@ import static javax.lang.model.element.Modifier.STATIC;
  * Created by user liveData 04/10/2018.
  */
 
+@SuppressWarnings("UnusedReturnValue")
 public class ArcViewGenerator {
-    Set<ClassName> classNames = new HashSet<>();
+    private Set<ClassName> classNames = new HashSet<>();
 
-    public void generateClass(Messager messager, Filer filer, Element elementBase, HashMap<String, ClassName> generatedViewModels, HashMap<String, ArrayList<ClassName>> liveDataClass) throws AnnotationException, IOException {
+    public Set<ClassName> generateClass(Messager messager, Filer filer, Element elementBase, HashMap<String, ClassName> generatedViewModels, HashMap<String, ArrayList<ClassName>> liveDataClass) throws AnnotationException, IOException {
 //        ArcViewModelValidator.validateClass(elementBase);
-
+        boolean isActivityOrFragment = Utils.instanceOf(elementBase, "androidx.fragment.app.FragmentActivity") ||
+                Utils.instanceOf(elementBase, "androidx.fragment.app.Fragment");
         String pack = Utils.getPackage(elementBase).toString();
         String name = elementBase.getSimpleName().toString();
         String generatedClassName = name + "ARC";
         ClassName className = ClassName.get(pack, generatedClassName);
         classNames.add(className);
 
-        TypeMirror type = elementBase.asType();
         TypeSpec.Builder navigatorClass = TypeSpec.classBuilder(className)
-                .addModifiers(PUBLIC)
-//                .superclass(TypeName.get(type))
-                ;
+                .addModifiers(PUBLIC);
         MethodSpec.Builder init = MethodSpec.methodBuilder("init")
                 .addModifiers(PUBLIC, STATIC)
                 .addParameter(TypeName.get(elementBase.asType()), "view", FINAL);
+
+        if (isActivityOrFragment) {
+            init.addStatement("$T owner = view", TypeName.get(elementBase.asType()));
+        } else {
+            throw new AnnotationException(MessageFormat.format("{0} @ViewARC should only be used in FragmentActivity or Fragment",
+                 elementBase.getSimpleName(), elementBase.asType().toString()));
+
+//            // ViewModel
+//            init.addStatement("FragmentActivity owner = getActivity(view.getContext())");
+//            ClassName fragmentActivity = ClassName.get("androidx.fragment.app", "FragmentActivity");
+//            ClassName context = ClassName.get("android.content", "Context");
+//
+//            navigatorClass.addMethod(MethodSpec.methodBuilder("getActivity")
+//                    .addModifiers(PUBLIC, STATIC)
+//                    .addParameter(context, "context", FINAL)
+//                    .addStatement("if (context == null) return null")
+//                    .beginControlFlow("else if (context instanceof $T)", ClassName.get("android.content", "ContextWrapper"))
+//                    .addStatement("if (context instanceof FragmentActivity) return (FragmentActivity) context")
+//                    .addStatement("else return getActivity(((ContextWrapper) context).getBaseContext())")
+//                    .endControlFlow()
+//                    .addStatement("return null")
+//                    .returns(fragmentActivity)
+//                    .build());
+        }
 
         ArrayList<ExecutableElement> observeDataMethods = new ArrayList<>();
         HashMap<String, List<String>> vmsFromView = new HashMap<>();
@@ -71,7 +93,7 @@ public class ArcViewGenerator {
                     messager.printMessage(Diagnostic.Kind.NOTE, MessageFormat.format("{0} Instantiated: {1} = {2}", generatedClassName, elementEnclosed.getSimpleName().toString(), vmClassName));
                     if (vmTypeName == null)
                         throw new AnnotationException("Did not find ViewModel for " + vmClassName + " " + elementEnclosed.getSimpleName().toString());
-                    init.addStatement("view.$N = $T.of(view).get($T.class)", elementEnclosed.getSimpleName(), ClassName.get("androidx.lifecycle", "ViewModelProviders"), vmTypeName);
+                    init.addStatement("view.$N = $T.of(owner).get($T.class)", elementEnclosed.getSimpleName(), ClassName.get("androidx.lifecycle", "ViewModelProviders"), vmTypeName);
 
                     List<String> listData = vmsFromView.get(vmTypeName.simpleName());
                     if (listData == null) {
@@ -138,7 +160,7 @@ public class ArcViewGenerator {
             messager.printMessage(Diagnostic.Kind.NOTE, MessageFormat.format("{0} Observing: {1}.{2}", generatedClassName, viewModelName, liveDataName));
 
             if (viewModelName != null && !viewModelName.isEmpty() && !liveDataName.isEmpty()) {
-                init.addStatement("view.$N.$N.observe(view, $N)", viewModelName, liveDataName, TypeSpec.anonymousClassBuilder("")
+                init.addStatement("view.$N.$N.observe(owner, $N)", viewModelName, liveDataName, TypeSpec.anonymousClassBuilder("")
                         .addSuperinterface(observer)
                         .addMethod(MethodSpec.methodBuilder("onChanged")
                                 .addAnnotation(Override.class)
@@ -150,25 +172,24 @@ public class ArcViewGenerator {
             }
         }
 
-
         navigatorClass.addMethod(init.build());
         // 3- Write generated class to a file
         JavaFile.builder(pack, navigatorClass.build()).build().writeTo(filer);
+        return classNames;
     }
 
-    /**
-     * public static void viewInit(MainActivity activity) {
-     * activity.viewVM = ViewModelProviders.of(activity).get(MainViewModel_.class);
-     * activity.viewVM.currentUser.observeForever(new Observer<User>() {
-     *
-     * @Override public void onChanged(User user) {
-     * activity.onUserChanged(user);
-     * }
-     * });
-     * }
-     */
-
-    private void createInstancesForViewModel(TypeSpec.Builder navigatorClass, TypeName className) throws AnnotationException {
+//    /**
+//     * public static void viewInit(MainActivity activity) {
+//     * activity.viewVM = ViewModelProviders.of(activity).get(MainViewModel_.class);
+//     * activity.viewVM.currentUser.observeForever(new Observer<User>() {
+//     *
+//     * @Override public void onChanged(User user) {
+//     * activity.onUserChanged(user);
+//     * }
+//     * });
+//     * }
+//     */
+//    private void createInstancesForViewModel(TypeSpec.Builder navigatorClass, TypeName className) throws AnnotationException {
 //        navigatorClass.addMethod(MethodSpec.methodBuilder("createInstance")
 //                .addModifiers(PUBLIC, STATIC)
 //                .addParameter(ClassName.get("androidx.fragment.app", "Fragment"), "fragment")
@@ -199,17 +220,17 @@ public class ArcViewGenerator {
 //                        ClassName.get("androidx.lifecycle", "ViewModelProviders"), className)
 //                .returns(className)
 //                .build());
-    }
+//    }
 
-    private void validateFieldLiveData(Element element) throws AnnotationException {
-        if (!element.getModifiers().contains(FINAL)) {
-            throw new AnnotationException(MessageFormat.format("{0}.{1} of type {2} may aways be final. ",
-                    element.getEnclosingElement().getSimpleName(), element.getSimpleName(), element.asType().toString()));
-        }
-    }
-
-    private void validateMethod(Element element) throws AnnotationException {
+//    private void validateFieldLiveData(Element element) throws AnnotationException {
+//        if (!element.getModifiers().contains(FINAL)) {
 //            throw new AnnotationException(MessageFormat.format("{0}.{1} of type {2} may aways be final. ",
 //                    element.getEnclosingElement().getSimpleName(), element.getSimpleName(), element.asType().toString()));
-    }
+//        }
+//    }
+
+//    private void validateMethod(Element element) throws AnnotationException {
+//        throw new AnnotationException(MessageFormat.format("{0}.{1} of type {2} may aways be final. ",
+//                element.getEnclosingElement().getSimpleName(), element.getSimpleName(), element.asType().toString()));
+//    }
 }

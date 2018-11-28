@@ -4,6 +4,7 @@ package com.vas.architecture_processor.exceptions;
  * Created by user liveData 04/10/2018.
  *
  */
+@SuppressWarnings("unused")
 public class AnnotationException extends Exception {
 
     public AnnotationException(String var1) {

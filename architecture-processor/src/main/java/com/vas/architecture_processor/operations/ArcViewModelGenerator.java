@@ -25,6 +25,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
@@ -43,7 +44,7 @@ public class ArcViewModelGenerator {
 
     private HashMap<String, ArrayList<ClassName>> liveDataClass = new HashMap<>();
 
-    public ClassName generateClass(Messager messager, Filer filer, Element elementBase) throws AnnotationException, IOException {
+    public ClassName generateClass(Messager messager, Filer filer, Element elementBase, HashMap<String, ClassName> generatedRepositories) throws AnnotationException, IOException {
         String pack = Utils.getPackage(elementBase).toString();
         String name = elementBase.getSimpleName().toString();
         String generatedClassName = name + "ARC";
@@ -82,7 +83,11 @@ public class ArcViewModelGenerator {
                         if (elementEnclosed.getModifiers().contains(PRIVATE)) {
                             messager.printMessage(Diagnostic.Kind.ERROR, MessageFormat.format("Element {0}.{1} may not be private.", elementEnclosed.getSimpleName(), elementEnclosed.getEnclosingElement().getSimpleName()));
                         }
-                        init.addStatement("super.$N = $T.getInstance()", elementEnclosed.getSimpleName(), elementEnclosed.asType());
+                        String rClassName = ((DeclaredType) elementEnclosed.asType()).asElement().getSimpleName().toString();
+                        ClassName rTypeName = generatedRepositories.get(rClassName);
+                        if (rTypeName == null)
+                            throw new AnnotationException("Did not find Repository for " + rClassName + " " + elementEnclosed.getSimpleName().toString());
+                        init.addStatement("super.$N = $T.getInstance()", elementEnclosed.getSimpleName(), rTypeName);
                     }
                 }
             } else if (elementEnclosed.getKind() == ElementKind.CONSTRUCTOR) {

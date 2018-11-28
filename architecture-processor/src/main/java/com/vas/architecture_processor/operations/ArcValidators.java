@@ -21,6 +21,7 @@ import static javax.lang.model.element.Modifier.PRIVATE;
  * Created by user liveData 04/10/2018.
  */
 
+@SuppressWarnings("unused")
 public class ArcValidators {
     public static void validateClass(Element elementBase) throws AnnotationException {
         // get annotation of the specified type if such an annotation is present, else null.
@@ -40,8 +41,8 @@ public class ArcValidators {
         Ignore ignore = elementEnclosed.getAnnotation(Ignore.class);
         ElementKind fieldKind = elementEnclosed.getKind();
         Set<Modifier> fieldModifiers = elementEnclosed.getModifiers();
-        System.out.printf(MessageFormat.format(
-                "\n    EnclosedElement {0} {1} {2} {3} {4} {5}",
+        System.out.println(MessageFormat.format(
+                "    EnclosedElement {0} {1} {2} {3} {4} {5}",
                 fieldKind,
                 ignore != null ? "ignore" : " - ",
                 Arrays.toString(fieldModifiers.toArray()),
@@ -58,8 +59,8 @@ public class ArcValidators {
         Ignore ignore = elementEnclosed.getAnnotation(Ignore.class);
         ElementKind fieldKind = elementEnclosed.getKind();
         Set<Modifier> fieldModifiers = elementEnclosed.getModifiers();
-        System.out.printf(MessageFormat.format(
-                "\n    EnclosedElement {0} {1} {2} {3} {4} {5}",
+        System.out.println(MessageFormat.format(
+                "    EnclosedElement {0} {1} {2} {3} {4} {5}",
                 fieldKind,
                 ignore != null ? "ignore" : " - ",
                 Arrays.toString(fieldModifiers.toArray()),
