@@ -29,6 +29,7 @@ import javax.lang.model.util.Elements;
 
 @SuppressWarnings({"FieldCanBeLocal", "unused"})
 public class ArchitectureProcessor extends AbstractProcessor {
+    public static ProcessingEnvironment pEnvironment;
     private Filer filer;
     private Messager messager;
     private Elements elements;
@@ -37,6 +38,7 @@ public class ArchitectureProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
         super.init(processingEnvironment);
+        pEnvironment = processingEnvironment;
         filer = processingEnvironment.getFiler();
         messager = processingEnvironment.getMessager();
         elements = processingEnvironment.getElementUtils();

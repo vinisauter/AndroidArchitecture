@@ -43,6 +43,12 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
+//    implementation 'com.github.vinisauter.AndroidArchitecture:architecture-annotations:master'
+//    annotationProcessor 'com.github.vinisauter.AndroidArchitecture:architecture-processor:master'
+//    implementation "org.androidannotations:androidannotations-api:4.5.2"
+//    annotationProcessor "org.androidannotations:androidannotations:4.5.2"
+//    annotationProcessor 'com.github.vinisauter.AndroidArchitecture:arcandroidannotationsplugin:master'
+
     implementation project(':architecture-annotations')
     annotationProcessor project(':architecture-processor')
     implementation "org.androidannotations:androidannotations-api:4.5.2"

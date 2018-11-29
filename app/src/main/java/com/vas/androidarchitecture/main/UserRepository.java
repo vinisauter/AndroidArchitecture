@@ -49,9 +49,10 @@ public class UserRepository {
     }
 
     @Async(executor = Async.ExecutorType.THREAD_POOL, allowMultipleCalls = true)
-    public void saveUser(final User user) throws Throwable {
+    public User saveUser(final User user) throws Throwable {
         SystemClock.sleep(5000);
 //        int i = 9 / 0;
+        return user;
     }
 
     @Async

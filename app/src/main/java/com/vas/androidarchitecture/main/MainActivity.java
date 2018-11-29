@@ -53,19 +53,6 @@ public class MainActivity extends AppCompatActivity {
     void uiThread() {
     }
 
-    @ObserveData(liveData = "statusUserTask")
-    void onStatusChanged(TaskStatus status) {
-        if (status != null) {
-            String text = MessageFormat.format("{0} {1} {2}", status.getTaskName(), status.getState().name(), status.hashCode());
-            if (status.getError() != null) {
-                text += (" " + status.getError().getMessage());
-            }
-            tvStatus.setText(MessageFormat.format("{0}\n{1}",
-                    text,
-                    tvStatus.getText()));
-        }
-    }
-
     @ObserveData
     void onUserChanged(User currentUser) {
         if (currentUser != null)
@@ -75,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
     @Click(R.id.bt_submit1)
     void setCurrentUserName() {
         Random gerador = new Random();
-        String anotherName = "John Doe " + gerador.nextInt();
-        viewVM.setCurrentUserName(anotherName);
+        String anotherName = "John " + gerador.nextInt();
+        viewVM.setCurrentUserName(anotherName, this, this::onStatusTaskChanged);
     }
 
     @Click(R.id.bt_submit2)
@@ -85,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         String anotherName = "John Doe " + gerador.nextInt();
         User user = new User();
         user.setUserName(anotherName);
-        viewVM.setCurrentUser(user);
+        viewVM.setCurrentUser(user, this, this::onStatusTaskChanged);
     }
 
     @ObserveData(liveData = "statusTask")

@@ -1,13 +1,13 @@
 package com.vas.architecture_processor.operations;
 
-import com.google.common.base.CaseFormat;
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.vas.architecture_processor.ArchitectureProcessor;
 import com.vas.architecture_processor.Utils;
 import com.vas.architecture_processor.exceptions.AnnotationException;
 import com.vas.architectureandroidannotations.viewmodel.Repository;
@@ -23,7 +23,6 @@ import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -71,12 +70,21 @@ public class ArcViewModelGenerator {
                         listData.add(ClassName.get(pack, name));
                         listData.add(className);
                     }
-                    String staticFieldName = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, fieldName);
-                    FieldSpec staticField = FieldSpec.builder(String.class, staticFieldName)
-                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                            .initializer("$S", fieldName)
-                            .build();
-                    navigatorClass.addField(staticField);
+//                    String staticFieldName = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, fieldName);
+//                    FieldSpec staticField = FieldSpec.builder(String.class, staticFieldName)
+//                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+//                            .initializer("$S", fieldName)
+//                            .build();
+//                    navigatorClass.addField(staticField);
+                    TypeName observer = ParameterizedTypeName.get(ClassName.get("androidx.lifecycle", "Observer"),
+                            ClassName.get(Utils.getGenericType(elementEnclosed.asType()))
+                    );
+                    MethodSpec.Builder liveDataField = MethodSpec.methodBuilder(fieldName)
+                            .addModifiers(PUBLIC)
+                            .addParameter(ClassName.get("androidx.lifecycle", "LifecycleOwner"), "owner")
+                            .addParameter(observer, "observer")
+                            .addStatement("super.$N.observe(owner, observer)", fieldName);
+                    navigatorClass.addMethod(liveDataField.build());
                 } else {
                     Repository repository = elementEnclosed.getAnnotation(Repository.class);
                     if (repository != null) {
@@ -120,8 +128,43 @@ public class ArcViewModelGenerator {
                     constructor.addStatement("_init()");
                     navigatorClass.addMethod(constructor.build());
                 }
-//            } else if (elementEnclosed.getKind() == ElementKind.METHOD) {
+            } else if (elementEnclosed.getKind() == ElementKind.METHOD) {
 //                ArcValidators.validateMethod(elementEnclosed);
+                ExecutableElement methodElement = (ExecutableElement) elementEnclosed;
+                String methodName = methodElement.getSimpleName().toString();
+                Element returnElement = ArchitectureProcessor.pEnvironment.getTypeUtils().asElement(methodElement.getReturnType());
+                boolean returnsLiveData = Utils.instanceOf(returnElement, "androidx.lifecycle.LiveData");
+                if (returnsLiveData) {
+                    MethodSpec.Builder liveDataMethod = MethodSpec.methodBuilder(methodName)
+                            .addModifiers(PUBLIC);
+
+                    TypeName observer = ParameterizedTypeName.get(ClassName.get("androidx.lifecycle", "Observer"),
+                            ClassName.get(Utils.getGenericType(methodElement.getReturnType()))
+                    );
+                    List<? extends VariableElement> parameterElements = methodElement.getParameters();
+                    ArrayList<ParameterSpec> parameterSpecs = new ArrayList<>();
+                    StringBuilder parametersString = new StringBuilder();
+                    if (parameterElements.size() > 0) {
+                        VariableElement firstParameter = parameterElements.get(0);
+                        String fpName = firstParameter.getSimpleName().toString();
+                        TypeMirror fpTypeName = firstParameter.asType();
+                        parameterSpecs.add(ParameterSpec.builder(TypeName.get(fpTypeName), fpName).build());
+                        parametersString.append(fpName);
+                        for (int i = 1; i < parameterElements.size(); i++) {
+                            VariableElement variableElement = parameterElements.get(i);
+                            String pName = variableElement.getSimpleName().toString();
+                            TypeMirror pTypeName = variableElement.asType();
+                            parameterSpecs.add(ParameterSpec.builder(TypeName.get(pTypeName), pName).build());
+                            parametersString.append(", ").append(fpName);
+                        }
+                    }
+                    if (parameterSpecs.size() > 0)
+                        liveDataMethod.addParameters(parameterSpecs);
+                    liveDataMethod.addParameter(ClassName.get("androidx.lifecycle", "LifecycleOwner"), "owner")
+                            .addParameter(observer, "observer")
+                            .addStatement("super.$N(" + parametersString + ").observe(owner, observer)", methodName);
+                    navigatorClass.addMethod(liveDataMethod.build());
+                }
             }
         }
         navigatorClass.addMethod(init.build());

@@ -1,16 +1,11 @@
 package com.vas.androidarchitecture.main;
 
 
-import android.os.AsyncTask;
-import android.util.SparseArray;
-
 import com.vas.androidarchitecture.model.User;
 import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.viewmodel.Repository;
-
-import java.util.HashMap;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -26,9 +21,9 @@ public class MainViewModel extends ViewModel {
     UserRepositoryARC repository;
 
     public final MutableLiveData<User> currentUser = new MutableLiveData<>();
-    public final MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
 
-    public void setCurrentUserName(String currentUserName) {
+    public MutableLiveData<TaskStatus> setCurrentUserName(String currentUserName) {
+        MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
         UserRepositoryARC.SendUserNameToServerTask task = repository.sendUserNameToServerAsync(currentUserName, new Callback<User>() {
             @Override
             public void onFinished(User user, Throwable error) {
@@ -41,13 +36,11 @@ public class MainViewModel extends ViewModel {
                 statusUserTask.setValue(status);
             }
         });
-
-        SparseArray<AsyncTask> taskHashMap = new SparseArray<>();
-        HashMap<String, AsyncTask> map = new HashMap<>();
-        taskHashMap.append(task.hashCode(), task);
+        return statusUserTask;
     }
 
-    public void setUserLastName(String currentUserLastName) {
+    public MutableLiveData<TaskStatus> setUserLastName(String currentUserLastName) {
+        MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
         repository.sendUserLastNameToServer(currentUserLastName, new Callback<User>() {
             @Override
             public void onFinished(User user, Throwable error) {
@@ -60,13 +53,16 @@ public class MainViewModel extends ViewModel {
                 statusUserTask.setValue(status);
             }
         });
+        return statusUserTask;
     }
 
-    public void setCurrentUser(User user) {
-        repository.saveUserAsync(user, new Callback<Void>() {
+    public MutableLiveData<TaskStatus> setCurrentUser(User user) {
+        MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
+        repository.saveUserAsync(user, new Callback<User>() {
             @Override
-            public void onFinished(Void aVoid, Throwable error) {
-
+            public void onFinished(User user, Throwable error) {
+                if (error == null)
+                    currentUser.setValue(user);
             }
 
             @Override
@@ -74,5 +70,6 @@ public class MainViewModel extends ViewModel {
                 statusUserTask.setValue(status);
             }
         });
+        return statusUserTask;
     }
 }
