@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'com.github.dcendents.android-maven'
 
-group = 'com.github.vinisauter.ArchitectureAnnotation'
+group = 'com.github.vinisauter.AndroidArchitecture'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
