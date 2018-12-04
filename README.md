@@ -2,11 +2,10 @@
 [![License](https://img.shields.io/github/license/blipinsk/RecyclerViewHeader.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 [![](https://jitpack.io/v/vinisauter/AndroidArchitecture.svg)](https://jitpack.io/#vinisauter/AndroidArchitecture)
 ---
-Android Processor to make easier implementation of [Architecture Components](https://developer.android.com/topic/libraries/architecture/) 
+Android Processor to make easier implementation of [Android Architecture Components](https://developer.android.com/topic/libraries/architecture/)
 
 [Android Jetpack Components](https://developer.android.com/jetpack/)
 
-[Android Architecture Components](https://developer.android.com/topic/libraries/architecture/)
 
 Library usage
 =============
