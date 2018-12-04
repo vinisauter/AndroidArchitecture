@@ -6,6 +6,8 @@ import com.vas.androidarchitecture.model.User;
 import com.vas.architectureandroidannotations.RepositoryARC;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.repository.Async;
+import com.vas.architectureandroidannotations.repository.AsyncType;
+import com.vas.architectureandroidannotations.repository.ExecutorType;
 
 /**
  * Created by Vinicius Sauter liveData 09/10/2018.
@@ -19,8 +21,8 @@ public class UserRepository {
         callback.onFinished(user, null);
     }
 
-    @Async
-    public User getCurrentUser() throws Throwable {
+    @Async(AsyncType.LIVE_DATA)
+    public User loadCurrentUser() throws Throwable {
         final User user = new User();
         user.setUserName("John");
         user.setLastName("Doe");
@@ -48,7 +50,7 @@ public class UserRepository {
         return user;
     }
 
-    @Async(executor = Async.ExecutorType.THREAD_POOL, allowMultipleCalls = true)
+    @Async(executor = ExecutorType.THREAD_POOL, allowMultipleCalls = true)
     public User saveUser(final User user) throws Throwable {
         SystemClock.sleep(5000);
 //        int i = 9 / 0;
@@ -60,17 +62,17 @@ public class UserRepository {
         SystemClock.sleep(5000);
     }
 
-    @Async(executor = Async.ExecutorType.SERIAL, allowMultipleCalls = true)
+    @Async(executor = ExecutorType.SERIAL, allowMultipleCalls = true)
     public void serialMultiple() throws Throwable {
         SystemClock.sleep(5000);
     }
 
-    @Async(executor = Async.ExecutorType.THREAD_POOL)
+    @Async(executor = ExecutorType.THREAD_POOL)
     public void threadPool() throws Throwable {
         SystemClock.sleep(5000);
     }
 
-    @Async(executor = Async.ExecutorType.THREAD_POOL, allowMultipleCalls = true)
+    @Async(executor = ExecutorType.THREAD_POOL, allowMultipleCalls = true)
     public void threadPoolMultiple() throws Throwable {
         SystemClock.sleep(5000);
     }

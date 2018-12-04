@@ -11,6 +11,8 @@ import com.squareup.javapoet.TypeSpec;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.repository.Async;
+import com.vas.architectureandroidannotations.repository.AsyncType;
+import com.vas.architectureandroidannotations.repository.ExecutorType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -191,13 +193,14 @@ public class Utils {
     }
 
     public static void generateAsyncFromMethod(TypeSpec.Builder navigatorClass, TypeMirror type, ClassName className, Element elementEnclosed, Async async) {
+        AsyncType asyncType = async.value();
         ExecutableElement methodElement = (ExecutableElement) elementEnclosed;
         String methodName = methodElement.getSimpleName().toString();
         String methodTaskName = methodName.substring(0, 1).toUpperCase() + methodName.substring(1) + "Task";
         TypeMirror returnType = methodElement.getReturnType();
-        List<? extends VariableElement> parameterElements = methodElement.getParameters();
-
         boolean isVoid = returnType.getKind() == TypeKind.VOID;
+        TypeName returnTypeName = isVoid ? ClassName.get(Void.class) : ClassName.get(returnType);
+        List<? extends VariableElement> parameterElements = methodElement.getParameters();
         TypeName pair;
         pair = isVoid ? ParameterizedTypeName.get(ClassName.get("android.util", "Pair"),
                 ClassName.get(Throwable.class),
@@ -280,6 +283,7 @@ public class Utils {
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(pair, "result")
                 .addCode(CodeBlock.builder()
+                        .addStatement("taskStatus.setResult(result.second)")
                         .addStatement("taskStatus.finish(result.first == null " +
                                 "? TaskStatus.State.SUCCEEDED " +
                                 ": TaskStatus.State.FAILED, result.first)")
@@ -292,6 +296,8 @@ public class Utils {
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(TaskStatus[].class, "state").varargs()
                 .addStatement("if (callback != null) callback.onStateChanged(state[0])");
+        TypeName taskStatusType = ParameterizedTypeName.get(ClassName.get(TaskStatus.class), returnTypeName);
+        TypeName taskStatusLiveDataType = ParameterizedTypeName.get(ClassName.get("androidx.lifecycle", "MutableLiveData"), taskStatusType);
 
         MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
@@ -301,27 +307,55 @@ public class Utils {
                         .addStatement("publishProgress(taskStatus)")
                         .build());
 
-        ParameterizedTypeName callbackType = ParameterizedTypeName.get(ClassName.get(Callback.class),
-                isVoid ? ClassName.get(Void.class) : ClassName.get(returnType));
+        ParameterizedTypeName callbackType = ParameterizedTypeName.get(ClassName.get(Callback.class), returnTypeName);
         FieldSpec.Builder callback = FieldSpec.builder(callbackType, "callback", Modifier.PRIVATE, Modifier.FINAL);
 
         FieldSpec.Builder taskStatus =
-                FieldSpec.builder(ClassName.get(TaskStatus.class), "taskStatus", Modifier.PRIVATE, Modifier.FINAL)
+                FieldSpec.builder(taskStatusType, "taskStatus", Modifier.PRIVATE, Modifier.FINAL)
                         .initializer("new $T(this.getClass().getSimpleName())", ClassName.get(TaskStatus.class));
-
-        constructor.addParameter(callbackType, "callback");
-        constructor.addCode(CodeBlock.builder()
-                .addStatement("this.callback = callback")
-                .build());
+        FieldSpec.Builder taskStatusLiveData =
+                FieldSpec.builder(taskStatusLiveDataType, "liveData", Modifier.PRIVATE, Modifier.FINAL)
+                        .initializer("new MutableLiveData<>()", ClassName.get(TaskStatus.class));
 
         ClassName methodTaskClassName = className.nestedClass(methodTaskName);
-        TypeSpec.Builder methodTaskClass = TypeSpec.classBuilder(methodTaskClassName.simpleName())
+        TypeSpec.Builder methodTaskClass = TypeSpec.classBuilder(methodTaskClassName.simpleName());
+        if (asyncType == AsyncType.ASYNC_TASK) {
+            constructor.addParameter(callbackType, "callback");
+            constructor.addCode(CodeBlock.builder()
+                    .addStatement("this.callback = callback")
+                    .build());
+        } else if (asyncType == AsyncType.LIVE_DATA) {
+            constructor.addCode(CodeBlock.builder()
+                    .addStatement(
+                            "this.callback = new Callback<$T>() {\n" +
+                                    "        @Override\n" +
+                                    "        public void onFinished($T t, Throwable error) {}\n\n" +
+                                    "        @Override\n" +
+                                    "        public void onStateChanged(TaskStatus status) {\n" +
+                                    "           liveData.setValue(status);\n" +
+                                    "        }\n" +
+                                    "      }", returnTypeName, returnTypeName)
+                    .build());
+
+            TypeName liveData = ParameterizedTypeName.get(ClassName.get("androidx.lifecycle", "LiveData"),
+                    returnTypeName
+            );
+
+            methodTaskClass.addMethod(MethodSpec.methodBuilder("asLiveData")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addStatement("return liveData")
+                    .returns(taskStatusLiveDataType)
+                    .build());
+        }
+
+        methodTaskClass
                 .superclass(asyncTask)
                 .addModifiers(Modifier.STATIC)
                 .addField(FieldSpec.builder(TypeName.get(type), "classInstance")
                         .addModifiers(Modifier.FINAL, Modifier.PRIVATE)
                         .build())
                 .addField(taskStatus.build())
+                .addField(taskStatusLiveData.build())
                 .addField(callback.build())
                 .addMethod(constructor.build())
                 .addMethod(onCancelledMethod.build())
@@ -331,31 +365,43 @@ public class Utils {
                 .addMethod(onProgressUpdateMethod.build());
 
         navigatorClass.addType(methodTaskClass.build());
-
-
-        Async.ExecutorType executorType = async.executor();
+//-------------
+        ExecutorType executorType = async.executor();
         boolean allowMultipleCalls = async.allowMultipleCalls();
 
         MethodSpec.Builder methodAsync = MethodSpec.methodBuilder(methodName + "Async")
                 .addModifiers(Modifier.PUBLIC)
-                .addParameters(parameterSpecs)
-                .returns(methodTaskClassName);
-
-        methodAsync.addParameter(callbackType, "callback");
-
+                .addParameters(parameterSpecs);
+        if (asyncType == AsyncType.ASYNC_TASK) {
+            methodAsync.returns(methodTaskClassName);
+            methodAsync.addParameter(callbackType, "callback");
+        } else if (asyncType == AsyncType.LIVE_DATA) {
+            TypeName liveData = ParameterizedTypeName.get(ClassName.get("androidx.lifecycle", "LiveData"),
+                    taskStatusType
+            );
+            methodAsync.returns(liveData);
+        }
 
         CodeBlock.Builder methodAsyncBody = CodeBlock.builder();
         if (!allowMultipleCalls) {
             methodAsyncBody.addStatement("$T taskG = taskMap.get($T.class.getSimpleName())",
                     ClassName.get("android.os", "AsyncTask"),
                     methodTaskClassName);
-            methodAsyncBody.beginControlFlow("if (taskG != null && taskG.getStatus() != AsyncTask.Status.FINISHED)")
-                    .addStatement("return ($T) taskG", methodTaskClassName)
-                    .endControlFlow();
-        }
-        methodAsyncBody.addStatement("$T task = new $T(this, callback)", methodTaskClassName, methodTaskClassName);
+            methodAsyncBody.beginControlFlow("if (taskG != null && taskG.getStatus() != AsyncTask.Status.FINISHED)");
 
-        if (executorType == Async.ExecutorType.SERIAL)
+            if (asyncType == AsyncType.ASYNC_TASK) {
+                methodAsyncBody.addStatement("return (($T) taskG)", methodTaskClassName);
+            } else if (asyncType == AsyncType.LIVE_DATA) {
+                methodAsyncBody.addStatement("return (($T) taskG).asLiveData()", methodTaskClassName);
+            }
+            methodAsyncBody.endControlFlow();
+        }
+        if (asyncType == AsyncType.ASYNC_TASK) {
+            methodAsyncBody.addStatement("$T task = new $T(this, callback)", methodTaskClassName, methodTaskClassName);
+        } else if (asyncType == AsyncType.LIVE_DATA) {
+            methodAsyncBody.addStatement("$T task = new $T(this)", methodTaskClassName, methodTaskClassName);
+        }
+        if (executorType == ExecutorType.SERIAL)
             methodAsyncBody.addStatement("task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR" + ps + ")", parameterNames.toArray());
         else
             methodAsyncBody.addStatement("task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR" + ps + ")", parameterNames.toArray());
@@ -363,7 +409,12 @@ public class Utils {
         if (!allowMultipleCalls) {
             methodAsyncBody.addStatement("taskMap.put(task.getClass().getSimpleName(), task)", methodTaskClassName, methodTaskClassName);
         }
-        methodAsyncBody.addStatement("return task", methodTaskClassName, methodTaskClassName);
+
+        if (asyncType == AsyncType.ASYNC_TASK) {
+            methodAsyncBody.addStatement("return task", methodTaskClassName, methodTaskClassName);
+        } else if (asyncType == AsyncType.LIVE_DATA) {
+            methodAsyncBody.addStatement("return task.asLiveData()", methodTaskClassName, methodTaskClassName);
+        }
 
         methodAsync.addCode(methodAsyncBody.build());
         navigatorClass.addMethod(methodAsync.build());

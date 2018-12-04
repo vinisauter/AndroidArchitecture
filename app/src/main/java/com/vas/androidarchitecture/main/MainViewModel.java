@@ -1,12 +1,12 @@
 package com.vas.androidarchitecture.main;
 
-
 import com.vas.androidarchitecture.model.User;
 import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.viewmodel.Repository;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -21,6 +21,10 @@ public class MainViewModel extends ViewModel {
     UserRepositoryARC repository;
 
     public final MutableLiveData<User> currentUser = new MutableLiveData<>();
+
+    public LiveData<TaskStatus<User>> loadCurrentUserAsync() {
+        return repository.loadCurrentUserAsync();
+    }
 
     public MutableLiveData<TaskStatus> setCurrentUserName(String currentUserName) {
         MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();

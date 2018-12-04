@@ -24,11 +24,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Async {
 
+    AsyncType value() default AsyncType.ASYNC_TASK;
+
     ExecutorType executor() default ExecutorType.SERIAL;
 
     boolean allowMultipleCalls() default false;
 
-    public enum ExecutorType {
-        SERIAL, THREAD_POOL
-    }
 }

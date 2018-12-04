@@ -6,13 +6,19 @@ import java.util.Date;
  * Created by Vinicius Sauter liveData 16/10/2018.
  * .
  */
-public class TaskStatus {
+public class TaskStatus<ResultObject> {
+    private ResultObject resultObject;
     private final String taskName;
     private final Date createdAt;
     private Date finishedAt;
     private State state;
     private Throwable error;
     private String message;
+
+    public TaskStatus(String taskName, ResultObject resultObject) {
+        this(taskName);
+        this.resultObject = resultObject;
+    }
 
     public TaskStatus(String taskName) {
         this.taskName = taskName;
@@ -75,6 +81,14 @@ public class TaskStatus {
 
     public String getTaskName() {
         return taskName;
+    }
+
+    public ResultObject getResult() {
+        return resultObject;
+    }
+
+    public void setResult(ResultObject resultObject) {
+        this.resultObject = resultObject;
     }
 
     /**
