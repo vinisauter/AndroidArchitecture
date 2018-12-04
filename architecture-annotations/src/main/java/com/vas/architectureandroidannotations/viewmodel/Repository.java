@@ -23,5 +23,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.FIELD)
 public @interface Repository {
-    Class<?> factory() default Void.class;
 }

@@ -6,10 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Adds ARC.init in the generated class.
+ * Adds _ARC.init in the generated class.
  */
 @Retention(RetentionPolicy.CLASS) // required
 @Target(ElementType.TYPE) // this can vary per annotation
 public @interface ViewARC {
-
 }
