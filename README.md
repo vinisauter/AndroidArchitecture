@@ -139,7 +139,6 @@ allprojects {
 
 Add the dependency
 
-parseVersion: [![](https://jitpack.io/v/parse-community/Parse-SDK-Android.svg)](https://jitpack.io/#parse-community/Parse-SDK-Android)
 ```groovy
 dependencies {
 
