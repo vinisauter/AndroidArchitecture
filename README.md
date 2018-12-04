@@ -139,6 +139,7 @@ allprojects {
 
 Add the dependency
 
+AndroidAnnotationsVersion: [![](https://jitpack.io/v/androidannotations/androidannotations.svg)](https://jitpack.io/#androidannotations/androidannotations)
 ```groovy
 dependencies {
 
