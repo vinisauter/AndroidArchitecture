@@ -15,6 +15,7 @@ Library usage
 
 MainActivity.java/
 
+```
     @ViewARC
     public class MainActivity extends AppCompatActivity {
         @ViewModel
@@ -60,11 +61,11 @@ MainActivity.java/
         }
         ...
     }
-
+```
 
 * [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)
 
-
+```
     @ViewModelARC
     public class MainViewModel extends ViewModel {
     
@@ -88,10 +89,10 @@ MainActivity.java/
             return statusUserTask;
         }
     }
-
+```
 * Repository/DataModel
 
-
+```
     @RepositoryARC
     public class UserRepository {
     
@@ -109,7 +110,7 @@ MainActivity.java/
             return user;
         }
     }
-
+```
 Including In Your Project
 -------------------------
 
