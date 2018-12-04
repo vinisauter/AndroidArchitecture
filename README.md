@@ -11,7 +11,10 @@ Android Processor to make easier implementation of [Architecture Components](htt
 Library usage
 =============
 
-* View using ViewModel and [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)
+* View using ViewModel and [LiveData](https://developer.android.com/topic/libraries/architecture/livedata). Annotate Activities and Fragments with **@ViewARC** to automatically create and instantiate the ViewModels and Observables for the View. 
+	* Use **@ViewModel** to bind and determinate the ViewModels that you are going to use in your View. Use **
+	* Use **@ObserveData** on a method to observe to a ViewModel LiveData. If you need to specify the ViewModel or LiveData: **@ObserveData(viewModel = "viewVM", liveData = "currentUser")**
+* If you are **NOT** using androidannotations please call ~~ViewClassName~~**ARC.init(this)** to bind the attributes
 
 MainActivity.java/
 
@@ -23,7 +26,7 @@ MainActivity.java/
         @ViewModel
         ConfigViewModelARC configVM;
 
-        // If you are using androidannotations you do not need this block
+        // If you are using androidannotations you do not need this block:
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -63,8 +66,11 @@ MainActivity.java/
     }
 ```
 
-* [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)
+Instead of the controller of the MVC pattern, or the presenter of the MVP pattern, MVVM has a binder, which automates communication between the view and its bound properties in the view model. The view model has been described as a state of the data in the model.[7]
+The main difference between the view model and the Presenter in the MVP pattern, is that the presenter has a reference to a view whereas the view model does not. Instead, a view directly binds to properties on the view model to send and receive updates. To function efficiently, this requires a binding technology or generating boilerplate code to do the binding.[6]
 
+* [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel). Annotating ViewModels with **@ViewModelARC** will automatically create a proxy class ~~ViewModelClassName~~**ARC** that you can easily use in your Views.
+	* Use **@Repository** to bind Repository/DataModel classes that you need to use
 ```
     @ViewModelARC
     public class MainViewModel extends ViewModel {
@@ -90,7 +96,12 @@ MainActivity.java/
         }
     }
 ```
-* Repository/DataModel
+* Repository/DataModel. Here is where is the development of the business logic or back-end logic, so the hard work needs to be done in background. Annotating **@RepositoryARC** to your class, will automatically create a proxy class ~~RepositoryClassName~~**ARC** that generates a asynchronous methods with callbacks or LiveData, by simply adding **@Async** to your method. 
+	* Use **@Async** to generate asynchronous methods with callbacks or LiveData. 
+		* default = @Async(value = AsyncType.ASYNC_TASK, executor = ExecutorType.SERIAL, allowMultipleCalls = false)
+		* value = [AsyncType.ASYNC_TASK, AsyncType.LIVE_DATA]
+		* executor = [ExecutorType.SERIAL, ExecutorType.THREAD_POOL]
+		* allowMultipleCalls = [true, false]
 
 ```
     @RepositoryARC
