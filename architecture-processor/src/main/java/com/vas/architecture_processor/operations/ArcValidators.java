@@ -26,7 +26,6 @@ public class ArcValidators {
     public static void validateClass(Element elementBase) throws AnnotationException {
         // get annotation of the specified type if such an annotation is present, else null.
         ViewModelARC annotation = elementBase.getAnnotation(ViewModelARC.class);
-        String value = annotation.value();
         if (elementBase.getKind() != CLASS) {
             throw new AnnotationException("Can only be applied to class.");
         }

@@ -6,7 +6,6 @@ import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.viewmodel.Repository;
 
-import androidx.arch.core.util.Function;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
@@ -24,21 +23,19 @@ public class MainViewModel extends ViewModel {
 
     public final MutableLiveData<User> currentUser = new MutableLiveData<>();
 
-    public LiveData<User> loadCurrentUserAsync() {
+    public LiveData<TaskStatus<User>> loadCurrentUser() {
         LiveData<TaskStatus<User>> taskStatusLiveData = repository.loadCurrentUserAsync();
-        return Transformations.map(taskStatusLiveData, new Function<TaskStatus<User>, User>() {
-            @Override
-            public User apply(TaskStatus<User> input) {
-                if (input.getResult() != null)
-                    currentUser.setValue(input.getResult());
-                return input.getResult();
-            }
+        Transformations.switchMap(taskStatusLiveData, input -> {
+            if (input.getResult() != null)
+                currentUser.setValue(input.getResult());
+            return currentUser;
         });
+        return taskStatusLiveData;
     }
 
     public MutableLiveData<TaskStatus> setCurrentUserName(String currentUserName) {
         MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
-        UserRepositoryARC.SendUserNameToServerTask task = repository.sendUserNameToServerAsync(currentUserName, new Callback<User>() {
+        repository.sendUserNameToServerAsync(currentUserName, new Callback<User>() {
             @Override
             public void onFinished(User user, Throwable error) {
                 if (error == null)
