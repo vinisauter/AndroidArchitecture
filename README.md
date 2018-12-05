@@ -77,8 +77,14 @@ MainActivity.java/
     
         public final MutableLiveData<User> currentUser = new MutableLiveData<>();
         
-        public LiveData<TaskStatus<User>> loadCurrentUser() {
-            return repository.loadCurrentUserAsync();
+        public LiveData<User> loadCurrentUser() {
+            LiveData<TaskStatus<User>> taskStatusLiveData = repository.loadCurrentUserAsync();
+            return Transformations.map(taskStatusLiveData, new Function<TaskStatus<User>, User>() {
+                @Override
+                public User apply(TaskStatus<User> input) {
+                    return input.getResult();
+                }
+            });
         }
         
         public MutableLiveData<TaskStatus> setCurrentUserName(String currentUserName) {
@@ -128,7 +134,7 @@ Add it in your root build.gradle at the end of repositories:
 allprojects {
 	repositories {
         google()
-        ...
+        //...
         maven { url "https://jitpack.io" }
     }
 }
@@ -146,17 +152,19 @@ dependencies {
     implementation "org.androidannotations:androidannotations-api:4.5.2"
     annotationProcessor "org.androidannotations:androidannotations:4.5.2"
     annotationProcessor 'com.github.vinisauter.AndroidArchitecture:arcandroidannotationsplugin:master'
-    ...
+    //...
     // AndroidX Architecture Components
     implementation 'androidx.lifecycle:lifecycle-viewmodel:2.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
-    ...
+    //...
     }
 ```
 
 Developed by
 ============
  * Vinicius Sauter
+ 
+[![View Vinicius profile on LinkedIn](https://www.linkedin.com/img/webpromo/btn_viewmy_160x33.png)](https://www.linkedin.com/in/vinicius-de-andrade-sauter-731a2862/)
 
 License
 =======
