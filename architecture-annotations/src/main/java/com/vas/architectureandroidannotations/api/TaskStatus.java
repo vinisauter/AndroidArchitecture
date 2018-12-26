@@ -12,6 +12,7 @@ public class TaskStatus<ResultObject> {
     private final Date createdAt;
     private Date finishedAt;
     private State state;
+    private double progress = 0.0;
     private Throwable error;
     private String message;
 
@@ -65,6 +66,14 @@ public class TaskStatus<ResultObject> {
 
     public void setState(State state) {
         this.state = state;
+    }
+
+    public double getProgress() {
+        return progress;
+    }
+
+    public void setProgress(double progress) {
+        this.progress = progress;
     }
 
     public Throwable getError() {
