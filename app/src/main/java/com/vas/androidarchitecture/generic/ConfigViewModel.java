@@ -28,11 +28,6 @@ public class ConfigViewModel extends AndroidViewModel {
     public void serialAsync() {
         repository.serialAsync(new Callback<Void>() {
             @Override
-            public void onFinished(Void aVoid, Throwable error) {
-
-            }
-
-            @Override
             public void onStateChanged(TaskStatus status) {
                 statusTask.setValue(status);
             }
@@ -41,11 +36,6 @@ public class ConfigViewModel extends AndroidViewModel {
 
     public void serialMultipleAsync() {
         repository.serialMultipleAsync(new Callback<Void>() {
-            @Override
-            public void onFinished(Void aVoid, Throwable error) {
-
-            }
-
             @Override
             public void onStateChanged(TaskStatus status) {
                 statusTask.setValue(status);
@@ -56,11 +46,6 @@ public class ConfigViewModel extends AndroidViewModel {
     public void threadPoolAsync() {
         repository.threadPoolAsync(new Callback<Void>() {
             @Override
-            public void onFinished(Void aVoid, Throwable error) {
-
-            }
-
-            @Override
             public void onStateChanged(TaskStatus status) {
                 statusTask.setValue(status);
             }
@@ -69,10 +54,6 @@ public class ConfigViewModel extends AndroidViewModel {
 
     public void threadPoolMultipleAsync() {
         repository.threadPoolMultipleAsync(new Callback<Void>() {
-            @Override
-            public void onFinished(Void aVoid, Throwable error) {
-            }
-
             @Override
             public void onStateChanged(TaskStatus status) {
                 statusTask.setValue(status);

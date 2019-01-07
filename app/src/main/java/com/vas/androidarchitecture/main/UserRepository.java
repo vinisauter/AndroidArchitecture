@@ -5,6 +5,7 @@ import android.os.SystemClock;
 import com.vas.androidarchitecture.model.User;
 import com.vas.architectureandroidannotations.RepositoryARC;
 import com.vas.architectureandroidannotations.api.Callback;
+import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.repository.Async;
 import com.vas.architectureandroidannotations.repository.AsyncType;
 import com.vas.architectureandroidannotations.repository.ExecutorType;
@@ -16,9 +17,11 @@ import com.vas.architectureandroidannotations.repository.ExecutorType;
 @RepositoryARC
 public class UserRepository {
     public void sendUserLastNameToServer(String userLastName, Callback<User> callback) {
+        TaskStatus<User> taskStatus = new TaskStatus<User>("sendUserLastNameToServer");
         final User user = new User();
         user.setLastName(userLastName);
-        callback.onFinished(user, null);
+        taskStatus.finish(user);
+        callback.onStateChanged(taskStatus);
     }
 
     @Async(AsyncType.LIVE_DATA)

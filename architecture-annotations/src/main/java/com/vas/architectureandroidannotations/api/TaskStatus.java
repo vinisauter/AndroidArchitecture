@@ -15,6 +15,7 @@ public class TaskStatus<ResultObject> {
     private double progress = 0.0;
     private Throwable error;
     private String message;
+    private Callback<ResultObject> callback;
 
     public TaskStatus(String taskName, ResultObject resultObject) {
         this(taskName);
@@ -27,21 +28,24 @@ public class TaskStatus<ResultObject> {
         this.setState(State.ENQUEUED);
     }
 
-    public void finish(State state) {
+    public void finish(ResultObject resultObject) {
         this.finishedAt = new Date();
-        setState(state);
+        this.resultObject = resultObject;
+        setState(State.SUCCEEDED);
     }
 
     public void finish(State state, String message) {
-        setState(state);
         this.finishedAt = new Date();
         this.message = message;
+        setState(state);
     }
 
     public void finish(State state, Throwable error) {
-        setState(state);
-        this.finishedAt = new Date();
         this.error = error;
+        this.finishedAt = new Date();
+        if (error != null)
+            this.message = error.getLocalizedMessage();
+        setState(state);
     }
 
     public boolean isFinished() {
@@ -66,6 +70,9 @@ public class TaskStatus<ResultObject> {
 
     public void setState(State state) {
         this.state = state;
+        if (this.callback != null) {
+            this.callback.onStateChanged(this);
+        }
     }
 
     public double getProgress() {
@@ -98,6 +105,10 @@ public class TaskStatus<ResultObject> {
 
     public void setResult(ResultObject resultObject) {
         this.resultObject = resultObject;
+    }
+
+    public void setCallback(Callback<ResultObject> callback) {
+        this.callback = callback;
     }
 
     /**
@@ -146,4 +157,17 @@ public class TaskStatus<ResultObject> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "TaskStatus{" +
+                "taskName='" + taskName + '\'' +
+                ", state=" + state +
+                ", resultObject=" + resultObject +
+                ", createdAt=" + createdAt +
+                ", finishedAt=" + finishedAt +
+                ", progress=" + progress +
+                ", message='" + message + '\'' +
+                ", error=" + error +
+                '}';
+    }
 }

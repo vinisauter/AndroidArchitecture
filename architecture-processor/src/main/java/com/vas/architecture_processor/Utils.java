@@ -288,7 +288,6 @@ public class Utils {
                                 "? TaskStatus.State.SUCCEEDED " +
                                 ": TaskStatus.State.FAILED, result.first)")
                         .addStatement("publishProgress(taskStatus)")
-                        .addStatement("if (callback != null) callback.onFinished(result.second, result.first)")
                         .build());
 
         MethodSpec.Builder onProgressUpdateMethod = MethodSpec.methodBuilder("onProgressUpdate")
@@ -329,12 +328,10 @@ public class Utils {
                     .addStatement(
                             "this.callback = new Callback<$T>() {\n" +
                                     "        @Override\n" +
-                                    "        public void onFinished($T t, Throwable error) {}\n\n" +
-                                    "        @Override\n" +
                                     "        public void onStateChanged(TaskStatus status) {\n" +
                                     "           liveData.setValue(status);\n" +
                                     "        }\n" +
-                                    "      }", returnTypeName, returnTypeName)
+                                    "      }", returnTypeName)
                     .build());
 
             TypeName liveData = ParameterizedTypeName.get(ClassName.get("androidx.lifecycle", "LiveData"),

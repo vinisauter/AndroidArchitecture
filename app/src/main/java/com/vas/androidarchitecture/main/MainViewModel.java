@@ -37,14 +37,10 @@ public class MainViewModel extends ViewModel {
         MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
         repository.sendUserNameToServerAsync(currentUserName, new Callback<User>() {
             @Override
-            public void onFinished(User user, Throwable error) {
-                if (error == null)
-                    currentUser.setValue(user);
-            }
-
-            @Override
-            public void onStateChanged(TaskStatus status) {
+            public void onStateChanged(TaskStatus<User> status) {
                 statusUserTask.setValue(status);
+                if (status.isFinished() && status.getError() == null)
+                    currentUser.setValue(status.getResult());
             }
         });
         return statusUserTask;
@@ -54,14 +50,10 @@ public class MainViewModel extends ViewModel {
         MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
         repository.sendUserLastNameToServer(currentUserLastName, new Callback<User>() {
             @Override
-            public void onFinished(User user, Throwable error) {
-                if (error == null)
-                    currentUser.setValue(user);
-            }
-
-            @Override
-            public void onStateChanged(TaskStatus status) {
+            public void onStateChanged(TaskStatus<User> status) {
                 statusUserTask.setValue(status);
+                if (status.isFinished() && status.getError() == null)
+                    currentUser.setValue(status.getResult());
             }
         });
         return statusUserTask;
@@ -71,14 +63,10 @@ public class MainViewModel extends ViewModel {
         MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
         repository.saveUserAsync(user, new Callback<User>() {
             @Override
-            public void onFinished(User user, Throwable error) {
-                if (error == null)
-                    currentUser.setValue(user);
-            }
-
-            @Override
-            public void onStateChanged(TaskStatus status) {
+            public void onStateChanged(TaskStatus<User> status) {
                 statusUserTask.setValue(status);
+                if (status.isFinished() && status.getError() == null)
+                    currentUser.setValue(status.getResult());
             }
         });
         return statusUserTask;
