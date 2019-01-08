@@ -17,7 +17,7 @@ import com.vas.architectureandroidannotations.repository.ExecutorType;
 @RepositoryARC
 public class UserRepository {
     public void sendUserLastNameToServer(String userLastName, Callback<User> callback) {
-        TaskStatus<User> taskStatus = new TaskStatus<User>("sendUserLastNameToServer");
+        TaskStatus<User> taskStatus = new TaskStatus<>("sendUserLastNameToServer");
         final User user = new User();
         user.setLastName(userLastName);
         taskStatus.finish(user);

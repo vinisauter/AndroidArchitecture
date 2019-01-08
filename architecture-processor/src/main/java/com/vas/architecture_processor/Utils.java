@@ -97,6 +97,11 @@ public class Utils {
             if (typeElement.toString().equals(classCanonicalName)) {
                 return typeElement;
             } else {
+                for (TypeMirror elementInterface : typeElement.getInterfaces()) {
+                    if (elementInterface.toString().equals(classCanonicalName)) {
+                        return (TypeElement) ((DeclaredType) elementInterface).asElement();
+                    }
+                }
                 TypeElement superclass = getSuperClass(typeElement);
                 return superclass != null ?
                         superclass.toString().equals(classCanonicalName) ? superclass : findInstanceOf(superclass, classCanonicalName)

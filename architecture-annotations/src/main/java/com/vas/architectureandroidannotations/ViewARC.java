@@ -11,4 +11,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS) // required
 @Target(ElementType.TYPE) // this can vary per annotation
 public @interface ViewARC {
+    /**
+     * Only for Fragments
+     */
+    boolean useSharedVM() default true;
 }

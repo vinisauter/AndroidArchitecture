@@ -89,7 +89,7 @@ public class ArcViewModelGenerator {
                     Repository repository = elementEnclosed.getAnnotation(Repository.class);
                     if (repository != null) {
                         if (elementEnclosed.getModifiers().contains(PRIVATE)) {
-                            messager.printMessage(Diagnostic.Kind.ERROR, MessageFormat.format("Element {0}.{1} may not be private.", elementEnclosed.getSimpleName(), elementEnclosed.getEnclosingElement().getSimpleName()));
+                            messager.printMessage(Diagnostic.Kind.ERROR, MessageFormat.format(" --- Element {0}.{1} may not be private.", elementEnclosed.getSimpleName(), elementEnclosed.getEnclosingElement().getSimpleName()));
                         }
                         String rClassName = ((DeclaredType) elementEnclosed.asType()).asElement().getSimpleName().toString();
                         ClassName rTypeName = generatedRepositories.get(rClassName);
