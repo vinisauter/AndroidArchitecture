@@ -8,20 +8,20 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 
 /**
- * TaskMirrorLiveData é responsavel por armazenar as informações (nome do método + parametros) das chamadas feitas a interface {@link T}.
+ * MirrorLiveData é responsavel por armazenar as informações (nome do método + parametros) das chamadas feitas a interface {@link T}.
  *
  * @param <T> Tipo da interface
  */
 @SuppressWarnings({"unused", "WeakerAccess", "UnusedReturnValue"})
-public class TaskMirrorLiveData<T> extends LiveData<TaskMirrorLiveData.ReflexCall<T>> {
+public class MirrorLiveData<T> extends LiveData<MirrorLiveData.ReflexCall<T>> {
 
     /**
      * @param callName       nome da tarefa a ser executada
      * @param interfaceToMap interface {@link T} para criar instancia de mapeamento {@link ReflexCall} do LiveData.
      * @return Cria um {@link LiveData} do tipo {@link ReflexCall}
      */
-    public static <T> TaskMirrorLiveData<T> create(String callName, Class<T> interfaceToMap) {
-        return new TaskMirrorLiveData<>(interfaceToMap, callName);
+    public static <T> MirrorLiveData<T> create(String callName, Class<T> interfaceToMap) {
+        return new MirrorLiveData<>(interfaceToMap, callName);
     }
 
     /**
@@ -49,12 +49,12 @@ public class TaskMirrorLiveData<T> extends LiveData<TaskMirrorLiveData.ReflexCal
         }
 
         /**
-         * mapResultOnDelegate é responsavel por fazer o mapeamento da chamada feita ao mirror {@code TaskMirrorLiveData.setTask()}
+         * reflectOnDelegate é responsavel por fazer o mapeamento da chamada feita ao mirror {@code MirrorLiveData.setReflection()}
          * encontrar e executar o metodo na classe que implementa o {@param delegate}.
          *
          * @param delegate implementação do contrato de estados.
          */
-        public Object mapResultOnDelegate(T delegate) {
+        public Object reflectOnDelegate(T delegate) {
             System.out.print("On method invoked: " + callName + "->" + method.getName());
             Object result = null;
             try {
@@ -75,16 +75,16 @@ public class TaskMirrorLiveData<T> extends LiveData<TaskMirrorLiveData.ReflexCal
     }
 
     public void observe(@NonNull LifecycleOwner owner, @NonNull T delegate) {
-        super.observe(owner, tReflexCall -> tReflexCall.mapResultOnDelegate(delegate));
+        super.observe(owner, tReflexCall -> tReflexCall.reflectOnDelegate(delegate));
     }
 
     public void observeForever(@NonNull T delegate) {
-        super.observeForever(tReflexCall -> tReflexCall.mapResultOnDelegate(delegate));
+        super.observeForever(tReflexCall -> tReflexCall.reflectOnDelegate(delegate));
     }
 
     private final T mirror;
 
-    private TaskMirrorLiveData(Class<T> clazz, String callName) {
+    private MirrorLiveData(Class<T> clazz, String callName) {
         //noinspection unchecked
         this.mirror = (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, (proxy, method, args) -> {
             postValue(new ReflexCall<>(callName, method, args));
@@ -92,7 +92,7 @@ public class TaskMirrorLiveData<T> extends LiveData<TaskMirrorLiveData.ReflexCal
         });
     }
 
-    public T setTask() {
+    public T setReflection() {
         return mirror;
     }
 }
