@@ -3,9 +3,9 @@ package com.vas.architecture_processor;
 
 import com.squareup.javapoet.ClassName;
 import com.vas.architecture_processor.exceptions.AnnotationException;
-import com.vas.architecture_processor.operations.ArcRepositoryGenerator;
-import com.vas.architecture_processor.operations.ArcViewGenerator;
-import com.vas.architecture_processor.operations.ArcViewModelGenerator;
+import com.vas.architecture_processor.repository.ArcRepositoryGenerator;
+import com.vas.architecture_processor.view.ArcViewGenerator;
+import com.vas.architecture_processor.viewmodel.ArcViewModelGenerator;
 import com.vas.architectureandroidannotations.Ignore;
 import com.vas.architectureandroidannotations.RepositoryARC;
 import com.vas.architectureandroidannotations.ViewARC;
@@ -31,7 +31,7 @@ import javax.lang.model.util.Elements;
 public class ArchitectureProcessor extends AbstractProcessor {
     public static ProcessingEnvironment pEnvironment;
     private Filer filer;
-    private Messager messager;
+    public static Messager messager;
     private Elements elements;
     private SourceVersion sourceVersion;
 
@@ -44,7 +44,7 @@ public class ArchitectureProcessor extends AbstractProcessor {
         elements = processingEnvironment.getElementUtils();
         sourceVersion = processingEnvironment.getSourceVersion();
 
-        System.out.println("-ArchitectureProcessor-" + sourceVersion);
+        Utils.logInfo("-ArchitectureProcessor-" + sourceVersion);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class ArchitectureProcessor extends AbstractProcessor {
         ArcViewModelGenerator arcViewModelGenerator = new ArcViewModelGenerator();
         ArcRepositoryGenerator arcRepositoryGenerator = new ArcRepositoryGenerator();
         for (Element element : roundEnvironment.getElementsAnnotatedWith(RepositoryARC.class)) {
-            System.out.println("--Generating--RepositoryARC--" + element);
+            Utils.logInfo("--Generating--RepositoryARC--" + element);
             try {
                 ClassName repositoryClass = arcRepositoryGenerator.generateClass(messager, filer, element);
                 repositories.put(repositoryClass.simpleName(), repositoryClass);
@@ -65,12 +65,12 @@ public class ArchitectureProcessor extends AbstractProcessor {
                 ClassName className = ClassName.get(pack, name);
                 repositories.put(name, className);
             } catch (AnnotationException ae) {
-                ae.printStackTrace();
+                Utils.logError(ae.getMessage());
             } catch (IOException ignored) {
             }
         }
         for (Element element : roundEnvironment.getElementsAnnotatedWith(ViewModelARC.class)) {
-            System.out.println("--Generating--ViewModelARC--" + element);
+            Utils.logInfo("--Generating--ViewModelARC--" + element);
             try {
                 ClassName viewModelClass = arcViewModelGenerator.generateClass(messager, filer, element, repositories);
                 viewModels.put(viewModelClass.simpleName(), viewModelClass);
@@ -79,22 +79,26 @@ public class ArchitectureProcessor extends AbstractProcessor {
                 ClassName className = ClassName.get(pack, name);
                 viewModels.put(name, className);
             } catch (AnnotationException ae) {
-                ae.printStackTrace();
+                Utils.logError(ae.getMessage());
             } catch (IOException ignored) {
             }
         }
         for (Element element : roundEnvironment.getElementsAnnotatedWith(ViewARC.class)) {
-            System.out.println("--Generating-ArcView--" + element);
+            Utils.logInfo("--Generating-ArcView--" + element);
             try {
                 arcViewGenerator.generateClass(messager, filer, element, viewModels, arcViewModelGenerator.getLiveDataClass());
             } catch (AnnotationException ae) {
-                ae.printStackTrace();
+                Utils.logError(ae.getMessage());
             } catch (IOException ignored) {
             }
         }
-//        for (Element element : roundEnvironment.getRootElements()) {
-//            System.out.println("\n--ROOT_ELEMENT--" + element);
-//        }
+
+        try {
+            Utils.generateDefaultClasses();
+        } catch (IOException ignored) {
+        } catch (Exception ae) {
+            Utils.logError(ae.getMessage());
+        }
         System.out.println("------------PROCESS_END------------\n");
         return true;
     }

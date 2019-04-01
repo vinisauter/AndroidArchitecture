@@ -1,6 +1,7 @@
 package com.vas.androidarchitecture.main;
 
 import com.vas.androidarchitecture.model.User;
+import com.vas.androidarchitecture.util.TaskLiveData;
 import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;
@@ -11,10 +12,13 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
+import static com.vas.androidarchitecture.util.LiveDataUtils.asLiveData;
+
 /**
  * Created by Vinicius Sauter liveData 09/10/2018.
  * .
  */
+@SuppressWarnings("WeakerAccess")
 @ViewModelARC
 public class MainViewModel extends ViewModel {
 
@@ -26,24 +30,15 @@ public class MainViewModel extends ViewModel {
     public LiveData<TaskStatus<User>> loadCurrentUser() {
         LiveData<TaskStatus<User>> taskStatusLiveData = repository.loadCurrentUserAsync();
         Transformations.switchMap(taskStatusLiveData, input -> {
-            if (input.getResult() != null)
-                currentUser.setValue(input.getResult());
+            if (input.getValue() != null)
+                currentUser.setValue(input.getValue());
             return currentUser;
         });
         return taskStatusLiveData;
     }
 
-    public MutableLiveData<TaskStatus> setCurrentUserName(String currentUserName) {
-        MutableLiveData<TaskStatus> statusUserTask = new MutableLiveData<>();
-        repository.sendUserNameToServerAsync(currentUserName, new Callback<User>() {
-            @Override
-            public void onStateChanged(TaskStatus<User> status) {
-                statusUserTask.setValue(status);
-                if (status.isFinished() && status.getError() == null)
-                    currentUser.setValue(status.getResult());
-            }
-        });
-        return statusUserTask;
+    public TaskLiveData<User> setCurrentUserName(String currentUserName) {
+        return asLiveData(repository.sendUserNameToServerRx(currentUserName).cache());
     }
 
     public MutableLiveData<TaskStatus> setUserLastName(String currentUserLastName) {
@@ -53,7 +48,7 @@ public class MainViewModel extends ViewModel {
             public void onStateChanged(TaskStatus<User> status) {
                 statusUserTask.setValue(status);
                 if (status.isFinished() && status.getError() == null)
-                    currentUser.setValue(status.getResult());
+                    currentUser.setValue(status.getValue());
             }
         });
         return statusUserTask;
@@ -66,7 +61,7 @@ public class MainViewModel extends ViewModel {
             public void onStateChanged(TaskStatus<User> status) {
                 statusUserTask.setValue(status);
                 if (status.isFinished() && status.getError() == null)
-                    currentUser.setValue(status.getResult());
+                    currentUser.setValue(status.getValue());
             }
         });
         return statusUserTask;

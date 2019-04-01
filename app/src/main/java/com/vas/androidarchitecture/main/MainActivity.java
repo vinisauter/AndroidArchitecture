@@ -63,7 +63,13 @@ public class MainActivity extends AppCompatActivity {
     void setCurrentUserName() {
         Random gerador = new Random();
         String anotherName = "John " + gerador.nextInt();
-        viewVM.setCurrentUserName(anotherName, this, this::onStatusTaskChanged);
+        viewVM.setCurrentUserName(anotherName).state().observe(this, status -> {
+            String text = MessageFormat.format("{0} {1} {2}",
+                    "setCurrentUserName", status, status.hashCode());
+            tvStatus.setText(MessageFormat.format("{0}\n{1}",
+                    text,
+                    tvStatus.getText()));
+        });
     }
 
     @Click(R.id.bt_submit2)

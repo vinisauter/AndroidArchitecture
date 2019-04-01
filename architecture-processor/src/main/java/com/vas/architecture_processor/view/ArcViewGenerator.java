@@ -1,4 +1,4 @@
-package com.vas.architecture_processor.operations;
+package com.vas.architecture_processor.view;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -13,7 +13,6 @@ import com.vas.architectureandroidannotations.view.ObserveData;
 import com.vas.architectureandroidannotations.view.ViewModel;
 
 import java.io.IOException;
-import java.lang.annotation.AnnotationFormatError;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +28,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.tools.Diagnostic;
 
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
@@ -49,6 +47,7 @@ public class ArcViewGenerator {
         ViewARC viewARC = elementBase.getAnnotation(ViewARC.class);
         boolean isActivity = Utils.instanceOf(elementBase, "androidx.fragment.app.FragmentActivity");
         boolean isFragment = Utils.instanceOf(elementBase, "androidx.fragment.app.Fragment");
+        boolean isView = Utils.instanceOf(elementBase, "android.view.View");
 
         String pack = Utils.getPackage(elementBase).toString();
         String name = elementBase.getSimpleName().toString();
@@ -73,12 +72,11 @@ public class ArcViewGenerator {
                 } else {
                     init.addStatement("$T owner = view", TypeName.get(elementBase.asType()));
                 }
-            } else {
-                //throw new AnnotationException(MessageFormat.format("{0} @ViewARC should only be used in FragmentActivity or Fragment",
-                //        elementBase.getSimpleName(), elementBase.asType().toString()));
-                boolean isLifecycleOwner = Utils.instanceOf(elementBase, "androidx.lifecycle.LifecycleOwner");
-                if (!isLifecycleOwner)
-                    messager.printMessage(Diagnostic.Kind.ERROR, " --- ArcView " + elementBase.getSimpleName() + " must implement androidx.lifecycle.LifecycleOwner! ---\n");
+            } else if (isView) {
+//                boolean isLifecycleOwner = Utils.instanceOf(elementBase, "androidx.lifecycle.LifecycleOwner");
+//                if (!isLifecycleOwner) {
+//                    messager.printMessage(Diagnostic.Kind.NOTE, " --- ArcView " + elementBase.getSimpleName() + " must implement androidx.lifecycle.LifecycleOwner! ---\n");
+//                }
 
                 // ViewModel
                 init.addStatement("FragmentActivity owner = getActivity(view.getContext())");
@@ -97,6 +95,9 @@ public class ArcViewGenerator {
                         .addStatement("return null")
                         .returns(fragmentActivity)
                         .build());
+            } else {
+                ClassName fragmentActivity = ClassName.get("androidx.fragment.app", "FragmentActivity");
+                init.addStatement("$T owner = view.getActivity()", fragmentActivity);
             }
         }
 
@@ -106,13 +107,7 @@ public class ArcViewGenerator {
             if (elementEnclosed.getKind() == ElementKind.FIELD) {
                 ViewModel viewModel = elementEnclosed.getAnnotation(ViewModel.class);
                 if (viewModel != null) {
-                    String vmClassName = ((DeclaredType) elementEnclosed.asType()).asElement().getSimpleName().toString();
-                    ClassName vmTypeName = generatedViewModels.get(vmClassName);
-                    System.out.println(MessageFormat.format("{0} Instantiated: {1} = {2}", generatedClassName, elementEnclosed.getSimpleName().toString(), vmClassName));
-                    if (vmTypeName == null)
-                        throw new AnnotationException("Did not find ViewModel for " + vmClassName + " " + elementEnclosed.getSimpleName().toString());
-                    init.addStatement("view.$N = $T.of(owner).get($T.class)", elementEnclosed.getSimpleName(), ClassName.get("androidx.lifecycle", "ViewModelProviders"), vmTypeName);
-
+                    ClassName vmTypeName = viewModelInstanceGenerator(generatedViewModels, generatedClassName, init, elementEnclosed);
                     List<String> listData = vmsFromView.get(vmTypeName.simpleName());
                     if (listData == null) {
                         listData = new ArrayList<>();
@@ -131,69 +126,85 @@ public class ArcViewGenerator {
         }
         for (ExecutableElement methodElement : observeDataMethods) {
             ObserveData observeData = methodElement.getAnnotation(ObserveData.class);
-
-            List<? extends VariableElement> parameters = methodElement.getParameters();
-            if (parameters.size() != 1) {
-                throw new AnnotationFormatError("Annotation ObserveData must be in a method with a single parameter");
-            }
-            VariableElement parameter = parameters.get(0);
-
-            String liveDataName = observeData.liveData();
-            if (liveDataName.isEmpty()) {
-                liveDataName = parameter.getSimpleName().toString();
-            }
-            String viewModelName = observeData.viewModel();
-//            Class clazz = Void.class;
-//            clazz.getSimpleName();
-
-            if (viewModelName.isEmpty()) {
-                ArrayList<String> liveDataFromViewForLiveDataName = new ArrayList<>();
-                ArrayList<ClassName> classVMNamesProj = liveDataClass.get(liveDataName);
-                if (classVMNamesProj != null) {
-                    for (ClassName projClassName : classVMNamesProj) {
-                        List<String> sujVM = vmsFromView.get(projClassName.simpleName());
-                        if (sujVM != null) {
-                            liveDataFromViewForLiveDataName.addAll(sujVM);
-                        }
-                    }
-                }
-                if (liveDataFromViewForLiveDataName.size() > 0) {
-                    viewModelName = liveDataFromViewForLiveDataName.get(0);
-                    if (viewModelName != null && liveDataFromViewForLiveDataName.size() != 1) {
-                        messager.printMessage(Diagnostic.Kind.WARNING, " --- Found more than one LiveData for "
-                                + liveDataName + ": " + liveDataFromViewForLiveDataName.toString() + " use \"viewModel\" to specify which ViewModel should be used: " +
-                                "@ObserveData(viewModel = \"XXX\", liveData = \"" + liveDataName + "\") replace XXX with one of " + liveDataFromViewForLiveDataName.toString()
-                        );
-                    }
-                } else {
-                    messager.printMessage(Diagnostic.Kind.ERROR, " --- Did not found LiveData named " + liveDataName + " on any ViewModels of " + pack + "." + name);
-                }
-            }
-
-            String methodName = methodElement.getSimpleName().toString();
-            TypeName observer = ParameterizedTypeName.get(ClassName.get("androidx.lifecycle", "Observer"),
-                    ClassName.get(parameter.asType())
-            );
-
-            System.out.println(MessageFormat.format("{0} Observing: {1}.{2}", generatedClassName, viewModelName, liveDataName));
-
-            if (viewModelName != null && !viewModelName.isEmpty() && !liveDataName.isEmpty()) {
-                init.addStatement("view.$N.$N.observe(view, $N)", viewModelName, liveDataName, TypeSpec.anonymousClassBuilder("")
-                        .addSuperinterface(observer)
-                        .addMethod(MethodSpec.methodBuilder("onChanged")
-                                .addAnnotation(Override.class)
-                                .addModifiers(Modifier.PUBLIC)
-                                .addParameter(ClassName.get(parameter.asType()), "item")
-                                .addStatement("view.$N(item)", methodName)
-                                .build())
-                        .build().toString());
-            }
+            observerGenerator(messager, liveDataClass, pack, name, generatedClassName, init, vmsFromView, methodElement, observeData);
         }
 
         navigatorClass.addMethod(init.build());
         // 3- Write generated class to a file
         JavaFile.builder(pack, navigatorClass.build()).build().writeTo(filer);
         return classNames;
+    }
+
+    private ClassName viewModelInstanceGenerator(HashMap<String, ClassName> generatedViewModels, String generatedClassName, MethodSpec.Builder init, Element elementEnclosed) throws AnnotationException {
+        String vmClassName = ((DeclaredType) elementEnclosed.asType()).asElement().getSimpleName().toString();
+        ClassName vmTypeName = generatedViewModels.get(vmClassName);
+        Utils.logInfo(MessageFormat.format("{0} Instantiated: {1} = {2}", generatedClassName, elementEnclosed.getSimpleName().toString(), vmClassName));
+        if (vmTypeName == null) {
+            Utils.logError("Did not find ViewModel for " + vmClassName + " " + elementEnclosed.getSimpleName().toString());
+        }else {
+            init.addStatement("view.$N = $T.of(owner).get($T.class)", elementEnclosed.getSimpleName(), ClassName.get("androidx.lifecycle", "ViewModelProviders"), vmTypeName);
+        }
+        return vmTypeName;
+    }
+
+    private void observerGenerator(Messager messager, HashMap<String, ArrayList<ClassName>> liveDataClass, String pack, String name, String generatedClassName, MethodSpec.Builder init, HashMap<String, List<String>> vmsFromView, ExecutableElement methodElement, ObserveData observeData) {
+        List<? extends VariableElement> parameters = methodElement.getParameters();
+        if (parameters.size() != 1) {
+            Utils.logError("Annotation ObserveData must be in a method with a single parameter");
+            return;
+        }
+        VariableElement parameter = parameters.get(0);
+
+        String liveDataName = observeData.liveData();
+        if (liveDataName.isEmpty()) {
+            liveDataName = parameter.getSimpleName().toString();
+        }
+        String viewModelName = observeData.viewModel();
+
+        if (viewModelName.isEmpty()) {
+            ArrayList<String> liveDataFromViewForLiveDataName = new ArrayList<>();
+            ArrayList<ClassName> classVMNamesProj = liveDataClass.get(liveDataName);
+            if (classVMNamesProj != null) {
+                for (ClassName projClassName : classVMNamesProj) {
+                    List<String> sujVM = vmsFromView.get(projClassName.simpleName());
+                    if (sujVM != null) {
+                        liveDataFromViewForLiveDataName.addAll(sujVM);
+                    }
+                }
+            }
+            if (liveDataFromViewForLiveDataName.size() > 0) {
+                viewModelName = liveDataFromViewForLiveDataName.get(0);
+                if (viewModelName != null && liveDataFromViewForLiveDataName.size() != 1) {
+                    Utils.logError(" --- Found more than one LiveData for "
+                            + liveDataName + ": " + liveDataFromViewForLiveDataName.toString() + " use \"viewModel\" to specify which ViewModel should be used: " +
+                            "@ObserveData(viewModel = \"XXX\", liveData = \"" + liveDataName + "\") replace XXX with one of " + liveDataFromViewForLiveDataName.toString()
+                    );
+                    return;
+                }
+            } else {
+                Utils.logError(" --- Did not found LiveData named " + liveDataName + " on any ViewModels of " + pack + "." + name);
+                return;
+            }
+        }
+
+        String methodName = methodElement.getSimpleName().toString();
+        TypeName observer = ParameterizedTypeName.get(ClassName.get("androidx.lifecycle", "Observer"),
+                ClassName.get(parameter.asType())
+        );
+
+        Utils.logInfo(MessageFormat.format("{0} Observing: {1}.{2}", generatedClassName, viewModelName, liveDataName));
+
+        if (viewModelName != null && !viewModelName.isEmpty() && !liveDataName.isEmpty()) {
+            init.addStatement("view.$N.$N.observe(view, $N)", viewModelName, liveDataName, TypeSpec.anonymousClassBuilder("")
+                    .addSuperinterface(observer)
+                    .addMethod(MethodSpec.methodBuilder("onChanged")
+                            .addAnnotation(Override.class)
+                            .addModifiers(Modifier.PUBLIC)
+                            .addParameter(ClassName.get(parameter.asType()), "item")
+                            .addStatement("view.$N(item)", methodName)
+                            .build())
+                    .build().toString());
+        }
     }
 
 //    /**

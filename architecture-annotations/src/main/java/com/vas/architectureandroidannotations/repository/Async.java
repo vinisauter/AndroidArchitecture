@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Async {
 
-    AsyncType value() default AsyncType.ASYNC_TASK;
+    AsyncType value() default AsyncType.RX;
 
     ExecutorType executor() default ExecutorType.SERIAL;
 

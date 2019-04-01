@@ -6,8 +6,9 @@ import java.util.Date;
  * Created by Vinicius Sauter liveData 16/10/2018.
  * .
  */
-public class TaskStatus<ResultObject> {
-    private ResultObject resultObject;
+@SuppressWarnings({"unused", "WeakerAccess"})
+public class TaskStatus<Value> {
+    private Value value;
     private final String taskName;
     private final Date createdAt;
     private Date finishedAt;
@@ -15,41 +16,55 @@ public class TaskStatus<ResultObject> {
     private double progress = 0.0;
     private Throwable error;
     private String message;
-    private Callback<ResultObject> callback;
+    private Callback<Value> callback;
 
-    public TaskStatus(String taskName, ResultObject resultObject) {
-        this(taskName);
-        this.resultObject = resultObject;
+    public TaskStatus(String taskName, Value value) {
+        this.taskName = taskName;
+        this.createdAt = new Date();
+        this.value = value;
+        this.setState(State.SUCCEEDED);
     }
 
     public TaskStatus(String taskName) {
         this.taskName = taskName;
         this.createdAt = new Date();
-        this.setState(State.ENQUEUED);
+        this.setState(State.LOADING);
     }
 
-    public void finish(ResultObject resultObject) {
-        this.finishedAt = new Date();
-        this.resultObject = resultObject;
+    public void finish(Value value) {
+        this.value = value;
+        setFinishedAt(new Date());
         setState(State.SUCCEEDED);
     }
 
     public void finish(State state, String message) {
-        this.finishedAt = new Date();
         this.message = message;
+        setFinishedAt(new Date());
         setState(state);
     }
 
     public void finish(State state, Throwable error) {
         this.error = error;
-        this.finishedAt = new Date();
         if (error != null)
-            this.message = error.getLocalizedMessage();
+            this.message = error.getMessage();
+        setFinishedAt(new Date());
         setState(state);
+    }
+
+    public void finish(Throwable error) {
+        this.error = error;
+        if (error != null)
+            this.message = error.getMessage();
+        setFinishedAt(new Date());
+        setState(State.ERROR);
     }
 
     public boolean isFinished() {
         return this.state.isFinished();
+    }
+
+    public boolean isSucceeded() {
+        return this.state == State.SUCCEEDED;
     }
 
     public Date getCreatedAt() {
@@ -73,6 +88,8 @@ public class TaskStatus<ResultObject> {
         if (this.callback != null) {
             this.callback.onStateChanged(this);
         }
+        if (state == State.SUCCEEDED)
+            error = null;
     }
 
     public double getProgress() {
@@ -99,62 +116,18 @@ public class TaskStatus<ResultObject> {
         return taskName;
     }
 
-    public ResultObject getResult() {
-        return resultObject;
+    public Value getValue() {
+        return value;
     }
 
-    public void setResult(ResultObject resultObject) {
-        this.resultObject = resultObject;
+    public void setValue(Value value) {
+        this.value = value;
     }
 
-    public void setCallback(Callback<ResultObject> callback) {
+    public void setCallback(Callback<Value> callback) {
         this.callback = callback;
-    }
-
-    /**
-     * The current state of a unit of work.
-     */
-    public enum State {
-
-        /**
-         * The state for work that is enqueued (hasn't completed and isn't running)
-         */
-        ENQUEUED,
-
-        /**
-         * The state for work that is currently being executed
-         */
-        RUNNING,
-
-        /**
-         * The state for work that has completed successfully
-         */
-        SUCCEEDED,
-
-        /**
-         * The state for work that has completed in a failure state
-         */
-        FAILED,
-
-        /**
-         * The state for work that is currently blocked because its prerequisites haven't finished
-         * successfully
-         */
-        BLOCKED,
-
-        /**
-         * The state for work that has been cancelled and will not execute
-         */
-        CANCELLED;
-
-        /**
-         * Returns {@code true} if this State is considered finished.
-         *
-         * @return {@code true} for {@link #SUCCEEDED}, {@link #FAILED}, and {@link #CANCELLED} states
-         */
-        public boolean isFinished() {
-            return (this == SUCCEEDED || this == FAILED || this == CANCELLED);
-        }
+        if (callback != null)
+            callback.onStateChanged(this);
     }
 
     @Override
@@ -162,7 +135,7 @@ public class TaskStatus<ResultObject> {
         return "TaskStatus{" +
                 "taskName='" + taskName + '\'' +
                 ", state=" + state +
-                ", resultObject=" + resultObject +
+                ", value=" + value +
                 ", createdAt=" + createdAt +
                 ", finishedAt=" + finishedAt +
                 ", progress=" + progress +

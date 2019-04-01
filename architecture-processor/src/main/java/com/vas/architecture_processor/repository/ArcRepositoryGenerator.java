@@ -1,4 +1,4 @@
-package com.vas.architecture_processor.operations;
+package com.vas.architecture_processor.repository;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -21,6 +21,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 
+import static com.vas.architecture_processor.repository.annotations.AsyncGenerator.generateAsyncFromMethod;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
@@ -39,7 +40,6 @@ public class ArcRepositoryGenerator {
         TypeSpec.Builder navigatorClass = TypeSpec.classBuilder(className)
                 .addModifiers(PUBLIC)
                 .superclass(TypeName.get(type));
-//        ArcRepositoryValidator.validateClass(elementBase);
         FieldSpec staticField = FieldSpec.builder(className, "instance_")
                 .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
                 .build();
@@ -54,6 +54,13 @@ public class ArcRepositoryGenerator {
                 .returns(className)
                 .build());
 
+        navigatorClass.addMethod(MethodSpec.methodBuilder("clearInstance")
+                .addModifiers(PUBLIC, STATIC)
+                .beginControlFlow("if (instance_ != null)")
+                .addStatement("instance_ = null", className)
+                .endControlFlow()
+                .build());
+
         ParameterizedTypeName hashMapType = ParameterizedTypeName.get(ClassName.get(HashMap.class),
                 ClassName.get(String.class),
                 ClassName.get("android.os", "AsyncTask"));
@@ -61,14 +68,11 @@ public class ArcRepositoryGenerator {
                 .initializer("new HashMap<>()")
                 .build());
         for (Element elementEnclosed : elementBase.getEnclosedElements()) {
-            //noinspection StatementWithEmptyBody
             if (elementEnclosed.getKind() == ElementKind.FIELD) {
-//                ArcRepositoryValidator.validateField(elementEnclosed);
             } else if (elementEnclosed.getKind() == ElementKind.METHOD) {
-//                ArcRepositoryValidator.validateMethod(elementEnclosed);
                 Async async = elementEnclosed.getAnnotation(Async.class);
                 if (async != null) {
-                    Utils.generateAsyncFromMethod(navigatorClass, type, className, elementEnclosed, async);
+                    generateAsyncFromMethod(navigatorClass, type, className, elementEnclosed, async);
                 }
             }
         }
@@ -76,9 +80,4 @@ public class ArcRepositoryGenerator {
         JavaFile.builder(pack, navigatorClass.build()).build().writeTo(filer);
         return className;
     }
-
-//    private void validateMethod(Element element) throws AnnotationException {
-//            throw new AnnotationException(MessageFormat.format("{0}.{1} of type {2} may aways be final. ",
-//                    element.getEnclosingElement().getSimpleName(), element.getSimpleName(), element.asType().toString()));
-//    }
 }

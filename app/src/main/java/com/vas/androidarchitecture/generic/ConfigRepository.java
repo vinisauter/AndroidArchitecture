@@ -4,6 +4,7 @@ import android.os.SystemClock;
 
 import com.vas.architectureandroidannotations.RepositoryARC;
 import com.vas.architectureandroidannotations.repository.Async;
+import com.vas.architectureandroidannotations.repository.AsyncType;
 import com.vas.architectureandroidannotations.repository.ExecutorType;
 
 /**
@@ -12,22 +13,22 @@ import com.vas.architectureandroidannotations.repository.ExecutorType;
  */
 @RepositoryARC
 public class ConfigRepository {
-    @Async
+    @Async(AsyncType.ASYNC_TASK)
     public void serial() throws Throwable {
         SystemClock.sleep(5000);
     }
 
-    @Async(executor = ExecutorType.SERIAL, allowMultipleCalls = true)
+    @Async(value = AsyncType.ASYNC_TASK, executor = ExecutorType.SERIAL, allowMultipleCalls = true)
     public void serialMultiple() throws Throwable {
         SystemClock.sleep(5000);
     }
 
-    @Async(executor = ExecutorType.THREAD_POOL)
+    @Async(value = AsyncType.ASYNC_TASK, executor = ExecutorType.THREAD_POOL)
     public void threadPool() throws Throwable {
         SystemClock.sleep(5000);
     }
 
-    @Async(executor = ExecutorType.THREAD_POOL, allowMultipleCalls = true)
+    @Async(value = AsyncType.ASYNC_TASK, executor = ExecutorType.THREAD_POOL, allowMultipleCalls = true)
     public void threadPoolMultiple() throws Throwable {
         SystemClock.sleep(5000);
     }
