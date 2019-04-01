@@ -1,5 +1,7 @@
 package com.vas.architectureandroidannotations.api;
 
+import com.sun.istack.internal.NotNull;
+
 /**
  * Container to ease passing around a tuple of two objects. This object provides a sensible
  * implementation of equals(), returning true if equals() is true on each of the contained
@@ -68,4 +70,13 @@ public class TaskResult<F> {
         return var0 == var1 || var0 != null && var0.equals(var1);
     }
 
+    @NotNull
+    public static <T> TaskResult<T> success(@NotNull T result) {
+        return new TaskResult<>(result, null);
+    }
+
+    @NotNull
+    public static <T> TaskResult<T> error(@NotNull Throwable error) {
+        return new TaskResult<>(null, error);
+    }
 }

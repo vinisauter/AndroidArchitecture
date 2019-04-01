@@ -1,9 +1,9 @@
 package com.vas.androidarchitecture.main;
 
 import com.vas.androidarchitecture.model.User;
-import com.vas.androidarchitecture.util.TaskLiveData;
 import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.api.Callback;
+import com.vas.architectureandroidannotations.api.TaskResult;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.viewmodel.Repository;
 
@@ -37,7 +37,7 @@ public class MainViewModel extends ViewModel {
         return taskStatusLiveData;
     }
 
-    public TaskLiveData<User> setCurrentUserName(String currentUserName) {
+    public LiveData<TaskResult<User>> setCurrentUserName(String currentUserName) {
         return asLiveData(repository.sendUserNameToServerRx(currentUserName).cache());
     }
 

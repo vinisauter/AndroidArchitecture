@@ -70,6 +70,7 @@ room.testing = "androidx.room:room-testing:$versions.room"
 deps.room = room
 
 def lifecycle = [:]
+lifecycle.reactivestreams = "androidx.lifecycle:lifecycle-reactivestreams:$versions.lifecycle"
 lifecycle.runtime = "androidx.lifecycle:lifecycle-runtime:$versions.lifecycle"
 lifecycle.extensions = "androidx.lifecycle:lifecycle-extensions:$versions.lifecycle"
 lifecycle.java8 = "androidx.lifecycle:lifecycle-common-java8:$versions.lifecycle"

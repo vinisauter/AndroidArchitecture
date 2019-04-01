@@ -67,6 +67,7 @@ dependencies {
     implementation deps.support.cardview
 
     // Architecture components
+    implementation deps.lifecycle.reactivestreams
     implementation deps.lifecycle.runtime
     implementation deps.lifecycle.extensions
     annotationProcessor deps.lifecycle.compiler
