@@ -1,9 +1,9 @@
 package com.vas.androidarchitecture.main;
 
 import com.vas.androidarchitecture.model.User;
+import com.vas.androidarchitecture.util.TaskLiveData;
 import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.api.Callback;
-import com.vas.architectureandroidannotations.api.TaskResult;
 import com.vas.architectureandroidannotations.api.TaskStatus;
 import com.vas.architectureandroidannotations.viewmodel.Repository;
 
@@ -12,7 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
-import static com.vas.androidarchitecture.util.LiveDataUtils.asLiveData;
+import static com.vas.androidarchitecture.util.LiveDataUtils.asTaskLiveData;
 
 /**
  * Created by Vinicius Sauter liveData 09/10/2018.
@@ -37,8 +37,8 @@ public class MainViewModel extends ViewModel {
         return taskStatusLiveData;
     }
 
-    public LiveData<TaskResult<User>> setCurrentUserName(String currentUserName) {
-        return asLiveData(repository.sendUserNameToServerRx(currentUserName).cache());
+    public TaskLiveData<User> setCurrentUserName(String currentUserName) {
+        return asTaskLiveData(repository.sendUserNameToServerRx(currentUserName).cache());
     }
 
     public MutableLiveData<TaskStatus> setUserLastName(String currentUserLastName) {
