@@ -1,4 +1,4 @@
-package com.vas.androidarchitecture.util;
+package com.vas.androidarchitecture.livedata;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;

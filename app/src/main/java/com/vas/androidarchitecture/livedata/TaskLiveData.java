@@ -1,4 +1,4 @@
-package com.vas.androidarchitecture.util;
+package com.vas.androidarchitecture.livedata;
 
 import com.vas.architectureandroidannotations.api.State;
 import com.vas.architectureandroidannotations.api.TaskResult;

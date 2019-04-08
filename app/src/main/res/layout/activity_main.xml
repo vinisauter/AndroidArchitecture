@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.vas.androidarchitecture.main.MainActivity">
+    tools:context="com.vas.androidarchitecture.view.MainActivity">
 
     <TextView
         android:id="@+id/tv_name"

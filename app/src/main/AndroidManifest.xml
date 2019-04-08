@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:appComponentFactory">
-        <activity android:name=".main.MainActivity_">
+        <activity android:name=".view.MainActivity_">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

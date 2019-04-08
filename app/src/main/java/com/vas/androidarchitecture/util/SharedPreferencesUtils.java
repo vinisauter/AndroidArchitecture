@@ -1,10 +1,12 @@
-package com.vas.androidarchitecture;
+package com.vas.androidarchitecture.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+
+import com.vas.androidarchitecture.ApplicationApp_;
 
 import java.util.HashSet;
 import java.util.Map;

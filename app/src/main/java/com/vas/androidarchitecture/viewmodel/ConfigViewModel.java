@@ -1,7 +1,8 @@
-package com.vas.androidarchitecture.generic;
+package com.vas.androidarchitecture.viewmodel;
 
 import android.app.Application;
 
+import com.vas.androidarchitecture.repository.ConfigRepositoryARC;
 import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;

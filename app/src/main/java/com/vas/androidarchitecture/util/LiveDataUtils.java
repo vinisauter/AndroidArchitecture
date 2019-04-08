@@ -1,5 +1,6 @@
 package com.vas.androidarchitecture.util;
 
+import com.vas.androidarchitecture.livedata.TaskLiveData;
 import com.vas.architectureandroidannotations.api.TaskResult;
 
 import androidx.lifecycle.LiveData;

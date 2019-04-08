@@ -1,10 +1,11 @@
-package com.vas.androidarchitecture.main;
+package com.vas.androidarchitecture.view;
 
 import android.widget.Toast;
 
 import com.vas.androidarchitecture.R;
-import com.vas.androidarchitecture.generic.ConfigViewModelARC;
 import com.vas.androidarchitecture.model.User;
+import com.vas.androidarchitecture.viewmodel.ConfigViewModelARC;
+import com.vas.androidarchitecture.viewmodel.MainViewModelARC;
 import com.vas.architectureandroidannotations.ViewARC;
 import com.vas.architectureandroidannotations.view.ObserveData;
 import com.vas.architectureandroidannotations.view.ViewModel;

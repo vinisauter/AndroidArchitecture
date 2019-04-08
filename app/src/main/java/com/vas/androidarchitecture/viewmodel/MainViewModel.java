@@ -1,7 +1,8 @@
-package com.vas.androidarchitecture.main;
+package com.vas.androidarchitecture.viewmodel;
 
+import com.vas.androidarchitecture.livedata.TaskLiveData;
 import com.vas.androidarchitecture.model.User;
-import com.vas.androidarchitecture.util.TaskLiveData;
+import com.vas.androidarchitecture.repository.UserRepositoryARC;
 import com.vas.architectureandroidannotations.ViewModelARC;
 import com.vas.architectureandroidannotations.api.Callback;
 import com.vas.architectureandroidannotations.api.TaskStatus;

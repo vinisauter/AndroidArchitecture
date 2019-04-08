@@ -1,4 +1,4 @@
-package com.vas.androidarchitecture.generic;
+package com.vas.androidarchitecture.repository;
 
 import android.os.SystemClock;
 

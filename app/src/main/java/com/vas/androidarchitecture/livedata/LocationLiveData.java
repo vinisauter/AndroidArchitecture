@@ -1,4 +1,4 @@
-package com.vas.androidarchitecture.util;
+package com.vas.androidarchitecture.livedata;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
